@@ -1,0 +1,331 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #13121b;
+  --color-surface-dim: #13121b;
+  --color-surface-bright: #393842;
+  --color-surface-container-lowest: #0e0d16;
+  --color-surface-container-low: #1b1b24;
+  --color-surface-container: #1f1f28;
+  --color-surface-container-high: #2a2933;
+  --color-surface-container-highest: #35343e;
+  --color-on-surface: #e4e1ee;
+  --color-on-surface-variant: #c7c4d8;
+  --color-inverse-surface: #e4e1ee;
+  --color-inverse-on-surface: #302f39;
+  --color-outline: #918fa1;
+  --color-outline-variant: #464555;
+  --color-surface-tint: #c3c0ff;
+  --color-primary: #c3c0ff;
+  --color-primary-fixed: #dfddff;
+  --color-on-primary: #1d00a5;
+  --color-primary-container: #4f46e5;
+  --color-on-primary-container: #dad7ff;
+  --color-inverse-primary: #4d44e3;
+  --color-secondary: #d2bbff;
+  --color-on-secondary: #3f008e;
+  --color-secondary-container: #6001d1;
+  --color-on-secondary-container: #c9aeff;
+  --color-tertiary: #ffb695;
+  --color-on-tertiary: #571f00;
+  --color-tertiary-container: #a44100;
+  --color-on-tertiary-container: #ffd2be;
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+  --color-background: #13121b;
+  --color-on-background: #e4e1ee;
+  --color-surface-variant: #35343e;
+  --color-white: #ffffff;
+
+  /* Custom fonts */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-headline-md: "Inter", sans-serif;
+  --font-headline-xl: "Inter", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-headline-lg: "Inter", sans-serif;
+  --font-label-md: "Inter", sans-serif;
+  --font-headline-lg-mobile: "Inter", sans-serif;
+  --font-label-sm: "Inter", sans-serif;
+
+  /* Spacing */
+  --spacing-base: 8px;
+  --spacing-xl: 80px;
+  --spacing-sm: 12px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 32px;
+  --spacing-gutter: 24px;
+  --spacing-xs: 4px;
+  --spacing-lg: 48px;
+  --spacing-md: 24px;
+
+  /* Radius */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --animate-fade-in: fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-in: slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-in {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+}
+
+:root {
+  --background: #13121b;
+  --foreground: #e4e1ee;
+}
+
+body {
+  background-color: #13121b;
+  color: #e4e1ee;
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Glassmorphic Accents */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  background: rgba(31, 31, 40, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  min-width: 0;
+}
+
+.crystalline {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDJxyLQNR2mHSQWZuC5Yqpf1ASWTVIG7v5kaoJpKaqXGKmPXO9eiCUMVcGhY1fUU3PCp2KTXJuiVYEouQrqpUjV6nNlQQyLLHNrkmrhSdjZD4lCnvv19QeHY1NbZNhsswmiMd8exafdatjYXKxZ4U51b14Pd4uoIJ3PIPa9GgXk8Oufpv9nIkAaHG8_vz9rUgH_net0eHy_vDMbysViUsA7FOsSqVpetVM7FYr5XHUxXiRjyV3VSqdq7mP7hwg48qsHsWJ2rgDWPRgq);
+  opacity: 0.02;
+  pointer-events: none;
+}
+
+/* Custom Scrollbar for premium dark feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0e0d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2933;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #464555;
+}
+
+/* Animations */
+.shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer-anim 3s infinite linear;
+}
+
+@keyframes shimmer-anim {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.float-anim {
+  animation: float-keyframe 6s ease-in-out infinite;
+}
+
+.float-anim-delay {
+  animation: float-keyframe 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+@keyframes float-keyframe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #1d1b31 0%, #13121b 100%);
+  animation: gradient-shift 15s ease infinite alternate;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+.mouse-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(195, 192, 255, 0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #464555 #0e0d16;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.enterprise-logo {
+  min-width: 150px;
+  justify-content: center;
+  opacity: 0.58;
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.enterprise-logo:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  color: var(--color-on-surface);
+}
+
+/* Custom Spacing overrides to handle dashes and avoid layout shifts */
+@utility px-margin-desktop {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+@utility px-margin-mobile {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@utility gap-gutter {
+  gap: 24px;
+}
+
+@utility z-25 {
+  z-index: 25;
+}
+
+@utility animate-duration-200 {
+  animation-duration: 200ms;
+}
+
+@utility text-md {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Premium Typography scales defined under Tailwind CSS v4 custom @utility directives */
+@utility text-headline-md {
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+@utility text-headline-xl {
+  font-size: clamp(44px, 7vw, 76px);
+  line-height: 1.1;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+@utility text-headline-lg {
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+@utility text-body-lg {
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+@utility text-body-md {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+@utility text-label-md {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+@utility text-label-sm {
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
