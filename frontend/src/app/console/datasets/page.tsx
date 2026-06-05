@@ -279,10 +279,10 @@ export default function DatasetsPage() {
       </section>
 
       {/* Main Responsive Grid Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-gutter min-h-0 min-w-0 overflow-y-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter min-w-0">
         
         {/* Left Column: NeonDB Configuration Panel */}
-        <div className="lg:col-span-5 min-w-0 flex flex-col gap-md lg:max-h-full">
+        <div className="lg:col-span-5 min-w-0 flex flex-col gap-md">
           
           {/* Connection Status Indicator */}
           <div className="glass-panel rounded-2xl p-md md:p-lg space-y-md">
@@ -311,7 +311,7 @@ export default function DatasetsPage() {
           </div>
 
           {/* Configuration Form Panel */}
-          <div className="glass-panel rounded-2xl p-md md:p-lg flex-1 flex flex-col justify-between">
+          <div className="glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between">
             <form onSubmit={handleSaveConfig} className="space-y-md flex flex-col h-full justify-between">
               <div className="space-y-md">
                 <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
@@ -368,10 +368,10 @@ export default function DatasetsPage() {
         </div>
 
         {/* Right Column: Dataset File Ingestion Workspace */}
-        <div className="lg:col-span-7 min-w-0 flex flex-col gap-md lg:max-h-full">
+        <div className="lg:col-span-7 min-w-0 flex flex-col gap-md">
           
-          <div className="glass-panel rounded-2xl p-md md:p-lg flex-1 flex flex-col justify-between">
-            <div className="space-y-md flex-1 flex flex-col">
+          <div className="glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between">
+            <div className="space-y-md flex flex-col">
               <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
                 <span className="material-symbols-outlined text-primary text-2xl">cloud_upload</span>
                 <div>
