@@ -1,0 +1,72 @@
+[
+  {
+    "timestamp": "12:04:12.441",
+    "model_id": "IF-GPT-4o-V2",
+    "status": "Success",
+    "latency": "122ms",
+    "cost": 0.0021
+  },
+  {
+    "timestamp": "12:04:10.923",
+    "model_id": "IF-LLAMA3-70B",
+    "status": "Success",
+    "latency": "842ms",
+    "cost": 0.0054
+  },
+  {
+    "timestamp": "12:04:08.115",
+    "model_id": "IF-GPT-4o-V2",
+    "status": "Failed",
+    "latency": "--",
+    "cost": 0.0
+  },
+  {
+    "timestamp": "12:03:54.102",
+    "model_id": "IF-CLAUDE3.5-SONNET",
+    "status": "Success",
+    "latency": "412ms",
+    "cost": 0.0084
+  },
+  {
+    "timestamp": "12:03:12.894",
+    "model_id": "IF-GPT-4o-V2",
+    "status": "Success",
+    "latency": "145ms",
+    "cost": 0.0023
+  },
+  {
+    "timestamp": "12:02:44.201",
+    "model_id": "IF-MIXTRAL-8x7B",
+    "status": "Success",
+    "latency": "512ms",
+    "cost": 0.0008
+  },
+  {
+    "timestamp": "12:01:10.556",
+    "model_id": "IF-LLAMA3-70B",
+    "status": "Success",
+    "latency": "789ms",
+    "cost": 0.0052
+  },
+  {
+    "timestamp": "12:00:04.112",
+    "model_id": "IF-CLAUDE3.5-SONNET",
+    "status": "Success",
+    "latency": "388ms",
+    "cost": 0.0081
+  },
+  {
+    "timestamp": "11:58:32.409",
+    "model_id": "IF-GPT-4o-V2",
+    "status": "Success",
+    "latency": "130ms",
+    "cost": 0.0021
+  },
+  {
+    "timestamp": "11:57:12.991",
+    "model_id": "IF-LLAMA3-70B",
+    "status": "Failed",
+    "latency": "--",
+    "cost": 0.0
+  }
+]

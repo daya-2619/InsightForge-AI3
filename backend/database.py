@@ -5,23 +5,56 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, T
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Get DATABASE_URL from environment or default to a local SQLite database
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    DATABASE_URL = "sqlite:///./insightforge.db"
+# Global cache for dynamic database engine switching
+_engine = None
+_SessionLocal = None
+_current_url = None
 
-# Fix PostgreSQL protocol prefix if necessary (for compatibility with render/neon)
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-# Configure SQLite specific argument if needed
-connect_args = {}
-if DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
-
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+def get_engine():
+    global _engine, _current_url
+    
+    # Reload environment to pick up any runtime changes to .env
+    from dotenv import load_dotenv
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv(env_path, override=True)
+    
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        db_url = "sqlite:///./insightforge.db"
+        
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        
+    # Recreate engine if URL changes
+    if _engine is None or db_url != _current_url:
+        connect_args = {}
+        if db_url.startswith("sqlite"):
+            connect_args = {"check_same_thread": False}
+        elif db_url.startswith("postgresql"):
+            connect_args = {"connect_timeout": 5}
+            
+        _engine = create_engine(db_url, connect_args=connect_args)
+        _current_url = db_url
+        
+    return _engine
+
+def get_sessionmaker():
+    global _SessionLocal
+    engine = get_engine()
+    
+    if _SessionLocal is None or _SessionLocal.kw.get("bind") != engine:
+        _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        
+    return _SessionLocal
+
+class DynamicSessionLocal:
+    """Callable wrapper that delegates to the current active sessionmaker."""
+    def __call__(self, *args, **kwargs):
+        return get_sessionmaker()(*args, **kwargs)
+
+SessionLocal = DynamicSessionLocal()
 
 class ExecutionLog(Base):
     __tablename__ = "execution_logs"
@@ -62,6 +95,47 @@ class KPIRecord(Base):
     revenue_chart_data = Column(Text, nullable=False)
     region_data = Column(Text, nullable=False)
 
+class DimCustomer(Base):
+    __tablename__ = "dim_customers"
+
+    customer_code = Column(String, primary_key=True, index=True)
+    customer = Column(String, nullable=False)
+    market = Column(String, nullable=False)
+    platform = Column(String, nullable=False)
+    channel = Column(String, nullable=False)
+    company = Column(String, nullable=False)  # "parent" or "child"
+
+class DimProduct(Base):
+    __tablename__ = "dim_products"
+
+    product_code = Column(String, primary_key=True, index=True)
+    division = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    product = Column(String, nullable=False)
+    variant = Column(String, nullable=False)
+    company = Column(String, nullable=False)  # "parent" or "child"
+
+class DimGrossPrice(Base):
+    __tablename__ = "dim_gross_prices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_code = Column(String, nullable=False, index=True)
+    price = Column(Float, nullable=False)
+    year = Column(Integer, nullable=False, index=True)
+    month = Column(Integer, nullable=True, index=True)  # 1-12 for monthly (child), Null for yearly (parent)
+    company = Column(String, nullable=False)  # "parent" or "child"
+
+class FactOrder(Base):
+    __tablename__ = "fact_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(String, nullable=True)  # child company orders have order_id
+    date = Column(String, nullable=False, index=True)  # YYYY-MM-DD
+    product_code = Column(String, nullable=False, index=True)
+    customer_code = Column(String, nullable=False, index=True)
+    sold_quantity = Column(Integer, nullable=False)
+    company = Column(String, nullable=False)  # "parent" or "child"
+
 def get_db():
     db = SessionLocal()
     try:
@@ -70,4 +144,5 @@ def get_db():
         db.close()
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=get_engine())
+

@@ -1,0 +1,44 @@
+[
+  {
+    "entity_name": "TechVanguard Corp",
+    "tier": "Enterprise Tier",
+    "status": "Verified",
+    "value": "$82,400.00",
+    "confidence": 98
+  },
+  {
+    "entity_name": "BioLink Systems",
+    "tier": "Standard Tier",
+    "status": "Processing",
+    "value": "$12,150.00",
+    "confidence": 84
+  },
+  {
+    "entity_name": "OmniRetail Inc",
+    "tier": "Enterprise Tier",
+    "status": "Verified",
+    "value": "$142,000.00",
+    "confidence": 95
+  },
+  {
+    "entity_name": "AeroDynamics Group",
+    "tier": "Startup Tier",
+    "status": "Verified",
+    "value": "$4,900.00",
+    "confidence": 99
+  },
+  {
+    "entity_name": "AlphaFinance Ltd",
+    "tier": "Enterprise Tier",
+    "status": "Processing",
+    "value": "$64,200.00",
+    "confidence": 91
+  },
+  {
+    "entity_name": "CloudScale Systems",
+    "tier": "Standard Tier",
+    "status": "Failed",
+    "value": "$0.00",
+    "confidence": 10
+  }
+]
