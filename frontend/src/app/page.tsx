@@ -10,7 +10,7 @@ export default function LandingPage() {
   // Interactive hooks for authentication and mobile menu
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [email, setEmail] = useState("admin@insightforge.ai");
+  const [email, setEmail] = useState("admin@struxiva.ai");
   const [password, setPassword] = useState("********");
   const [authError, setAuthError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -295,7 +295,7 @@ export default function LandingPage() {
             href="/"
             className="min-w-0 text-xl sm:text-headline-md font-headline-md font-bold text-primary tracking-normal cursor-pointer whitespace-nowrap"
           >
-            InsightForge AI
+            Struxiva AI
           </Link>
         </div>
         
@@ -637,7 +637,7 @@ export default function LandingPage() {
               <div className="space-y-md">
                 <h3 className="text-headline-md font-headline-md">Unmatched Enterprise Interoperability</h3>
                 <p className="w-full max-w-3xl text-lg leading-8 text-gray-400 text-pretty">
-                  Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed-InsightForge reads data at the source.
+                  Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed-Struxiva reads data at the source.
                 </p>
               </div>
               <div className="flex justify-center md:justify-start gap-md pt-base">
@@ -772,7 +772,7 @@ export default function LandingPage() {
             <span className="text-[120px] font-serif font-bold text-primary/10 absolute -top-16 left-1/2 -translate-x-1/2 select-none">&quot;</span>
             
             <p className="text-headline-md italic font-light text-on-surface mb-lg leading-relaxed relative z-10">
-              &quot;InsightForge AI didn&apos;t just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation.&quot;
+              &quot;Struxiva AI didn&apos;t just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation.&quot;
             </p>
             <div className="flex flex-col items-center gap-base relative z-10">
               <img 
@@ -792,8 +792,8 @@ export default function LandingPage() {
       {/* Footer conforming strictly to mockup navigation items */}
       <footer className="bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md z-30">
         <div className="flex flex-col items-center md:items-start gap-xs text-center md:text-left">
-          <span className="text-label-md font-bold text-on-surface">InsightForge AI</span>
-          <p className="text-label-sm font-label-sm text-outline">(c) 2026 InsightForge AI. Visionary Reliability.</p>
+          <span className="text-label-md font-bold text-on-surface">Struxiva AI</span>
+          <p className="text-label-sm font-label-sm text-outline">(c) 2026 Struxiva AI. Visionary Reliability.</p>
         </div>
         <div className="flex flex-wrap justify-center gap-md">
           <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Privacy Policy</a>
@@ -872,7 +872,7 @@ export default function LandingPage() {
                   <>
                     <div className="text-center mb-6 space-y-2 relative z-10">
                       <span className="text-primary font-extrabold tracking-normal text-2xl sm:text-3xl">
-                        InsightForge <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Console</span>
+                        Struxiva <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Console</span>
                       </span>
                       <p className="text-sm text-outline">Enter credentials to access the enterprise intelligence suite.</p>
                     </div>
@@ -891,7 +891,7 @@ export default function LandingPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full min-w-0 bg-surface-container border-b-2 border-outline-variant focus:border-primary px-4 py-3 text-base text-on-surface outline-none rounded-t-lg transition-colors"
-                          placeholder="admin@insightforge.ai"
+                          placeholder="admin@struxiva.ai"
                         />
                       </div>
 
@@ -1058,7 +1058,7 @@ export default function LandingPage() {
             <div className="space-y-lg flex flex-col h-full overflow-y-auto">
               <div className="flex justify-between items-center pb-sm border-b border-white/5">
                 <span className="text-headline-md font-bold text-primary tracking-tight">
-                  InsightForge AI
+                  Struxiva AI
                 </span>
                 
                 <button 

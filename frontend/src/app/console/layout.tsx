@@ -77,7 +77,7 @@ export default function ConsoleLayout({
             onClick={() => router.push("/")}
             className="min-w-0 text-xl md:text-headline-md font-extrabold text-primary tracking-normal hover:opacity-90 flex items-center gap-sm transition-opacity whitespace-nowrap"
           >
-            InsightForge <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI</span>
+            Struxiva <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI</span>
           </button>
           
           <span className="hidden md:inline-block text-[10px] uppercase font-bold text-outline-variant px-sm py-1 bg-white/5 border border-white/10 rounded-full tracking-widest">

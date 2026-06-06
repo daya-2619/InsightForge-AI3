@@ -320,7 +320,7 @@ export default function DatasetsPage() {
             <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-xs">
               <span className="text-[9px] text-outline uppercase font-bold">NeonDB Cluster Url</span>
               <p className="text-label-sm font-semibold text-secondary truncate mt-0.5">
-                {dbUrl ? (showRawUrl ? dbUrl : maskedUrl) : "Sourcing local backup database (insightforge.db)"}
+                {dbUrl ? (showRawUrl ? dbUrl : maskedUrl) : "Sourcing local backup database (struxiva.db)"}
               </p>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function DatasetsPage() {
                   </div>
                   <input 
                     type={showRawUrl ? "text" : "password"}
-                    placeholder="postgresql://user:password@ep-glassy-galaxy-a5v6qdg7.us-east-2.aws.neon.tech/insightforge_enterprise"
+                    placeholder="postgresql://user:password@ep-glassy-galaxy-a5v6qdg7.us-east-2.aws.neon.tech/struxiva_enterprise"
                     value={dbUrl}
                     onChange={(e) => setDbUrl(e.target.value)}
                     disabled={isTesting || isSaving}

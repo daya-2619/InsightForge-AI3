@@ -1,5 +1,5 @@
 ---
-name: InsightForge AI
+name: Struxiva AI
 colors:
   surface: '#13121b'
   surface-dim: '#13121b'

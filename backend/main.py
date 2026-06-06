@@ -18,7 +18,7 @@ from etl_pipeline import run_etl_pipeline
 from fastapi import File, UploadFile, Form
 from sqlalchemy import create_engine, text
 
-app = FastAPI(title="InsightForge AI API", version="1.0.0")
+app = FastAPI(title="Struxiva AI API", version="1.0.0")
 
 # Enable CORS for Next.js dev server
 app.add_middleware(
@@ -773,7 +773,7 @@ def chat_copilot(request: ChatRequest, db: Session = Depends(get_db)):
     else:
         # General response
         response_text = (
-            "Hello! I am your **InsightForge AI Copilot**. I have real-time analytical access to all nodes, "
+            "Hello! I am your **Struxiva AI Copilot**. I have real-time analytical access to all nodes, "
             "databases, execution logs, and activities across the system. "
             "Ask me specific questions like *'Why did revenue drop last month?'*, *'Analyze customer churn'*, "
             "or *'Compare model accuracy'* and I will fetch live telemetry, generate structural SQL queries, "
