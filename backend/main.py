@@ -795,36 +795,59 @@ def get_neondb_config():
     }
 
 @app.get("/api/neondb/tables")
-def get_tables_stats(db: Session = Depends(get_db)):
+def get_tables_stats():
     try:
-        logs_count = db.query(ExecutionLog).count()
-        act_count = db.query(Activity).count()
-        kpi_count = db.query(KPIRecord).count()
-        cust_count = db.query(DimCustomer).count()
-        prod_count = db.query(DimProduct).count()
-        price_count = db.query(DimGrossPrice).count()
-        order_count = db.query(FactOrder).count()
-        return {
-            "execution_logs": logs_count,
-            "activities": act_count,
-            "kpi_records": kpi_count,
-            "dim_customers": cust_count,
-            "dim_products": prod_count,
-            "dim_gross_prices": price_count,
-            "fact_orders": order_count
-        }
+        from database import get_engine
+        from sqlalchemy import inspect, text
+        
+        engine = get_engine()
+        inspector = inspect(engine)
+        table_names = inspector.get_table_names()
+        
+        tables_info = []
+        with engine.connect() as conn:
+            for table_name in table_names:
+                # Get columns
+                columns = [col["name"] for col in inspector.get_columns(table_name)]
+                
+                # Get row count
+                try:
+                    count_res = conn.execute(text(f'SELECT COUNT(*) FROM "{table_name}"'))
+                    records = count_res.scalar() or 0
+                except Exception:
+                    records = 0
+                
+                # Get size
+                size_str = "0 B"
+                try:
+                    if engine.dialect.name == "postgresql":
+                        size_query = text("SELECT pg_size_pretty(pg_total_relation_size(quote_ident(:tbl)))")
+                        size_res = conn.execute(size_query, {"tbl": table_name}).scalar()
+                        size_str = size_res or "0 B"
+                    else:
+                        # Estimate size for SQLite and other databases
+                        bytes_est = records * 150
+                        if bytes_est >= 1024 * 1024:
+                            size_str = f"{bytes_est / (1024 * 1024):.1f} MB"
+                        elif bytes_est >= 1024:
+                            size_str = f"{bytes_est / 1024:.1f} KB"
+                        else:
+                            size_str = f"{bytes_est} B"
+                except Exception:
+                    size_str = "Unknown"
+                
+                tables_info.append({
+                    "name": table_name,
+                    "records": records,
+                    "size": size_str,
+                    "status": "Synchronized",
+                    "columns": columns
+                })
+        return tables_info
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return {
-            "execution_logs": 0,
-            "activities": 0,
-            "kpi_records": 0,
-            "dim_customers": 0,
-            "dim_products": 0,
-            "dim_gross_prices": 0,
-            "fact_orders": 0
-        }
+        return []
 
 @app.post("/api/neondb/run-etl")
 def trigger_etl_pipeline(db: Session = Depends(get_db)):

@@ -28,15 +28,7 @@ export default function DatasetsPage() {
   const [ingestProgress, setIngestProgress] = useState(0);
 
   // Schema Table Catalog State
-  const [tables, setTables] = useState<DBTable[]>([
-    { name: "execution_logs", records: 0, size: "1.4 KB", status: "Synchronized", columns: ["id", "timestamp", "model_id", "status", "latency", "cost"] },
-    { name: "activities", records: 0, size: "284 B", status: "Synchronized", columns: ["id", "entity_name", "tier", "status", "value", "confidence"] },
-    { name: "kpi_records", records: 0, size: "16 KB", status: "Synchronized", columns: ["id", "region", "days", "total_revenue", "revenue_growth", "net_profit", "profit_growth", "active_users", "user_growth", "growth_rate", "growth_change", "revenue_chart_data", "region_data"] },
-    { name: "dim_customers", records: 0, size: "2.4 KB", status: "Synchronized", columns: ["customer_code", "customer", "market", "platform", "channel", "company"] },
-    { name: "dim_products", records: 0, size: "28 KB", status: "Synchronized", columns: ["product_code", "division", "category", "product", "variant", "company"] },
-    { name: "dim_gross_prices", records: 0, size: "20 KB", status: "Synchronized", columns: ["id", "product_code", "price", "year", "month", "company"] },
-    { name: "fact_orders", records: 0, size: "3.4 MB", status: "Synchronized", columns: ["id", "order_id", "date", "product_code", "customer_code", "sold_quantity", "company"] }
-  ]);
+  const [tables, setTables] = useState<DBTable[]>([]);
 
   const [isRunningEtl, setIsRunningEtl] = useState(false);
   const [etlProgress, setEtlProgress] = useState(0);
@@ -48,21 +40,20 @@ export default function DatasetsPage() {
     setSimulatedLogs(prev => [`[${timestamp}] DB: ${text}`, ...prev.slice(0, 25)]);
   };
 
-  // Fetch actual table row counts from backend
+  // Fetch actual database schema from backend
   const fetchTableCounts = () => {
     fetch("http://127.0.0.1:8000/api/neondb/tables")
       .then(res => res.json())
       .then(data => {
-        setTables(prev => prev.map(t => {
-          if (t.name in data) {
-            return { ...t, records: data[t.name], status: "Synchronized" };
-          }
-          return t;
-        }));
-        logDatabase("Refreshed data catalog statistics with actual database row counts.");
+        if (Array.isArray(data)) {
+          setTables(data);
+          logDatabase("Refreshed data catalog statistics with actual database schema.");
+        } else {
+          logDatabase("Failed to parse database schema catalog. Reverting to fallback.");
+        }
       })
       .catch(() => {
-        logDatabase("Failed to retrieve live table counts. Sourcing simulated local counts.");
+        logDatabase("Failed to retrieve live schema catalog. Server unreachable.");
       });
   };
 
