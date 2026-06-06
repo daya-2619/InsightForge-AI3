@@ -47,6 +47,9 @@ export default function DatasetsPage() {
       .then(data => {
         if (Array.isArray(data)) {
           setTables(data);
+          if (data.length > 0) {
+            setTargetTable(prev => data.some((t: DBTable) => t.name === prev) ? prev : data[0].name);
+          }
           logDatabase("Refreshed data catalog statistics with actual database schema.");
         } else {
           logDatabase("Failed to parse database schema catalog. Reverting to fallback.");
@@ -380,9 +383,13 @@ export default function DatasetsPage() {
                     onChange={(e) => setTargetTable(e.target.value as any)}
                     className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-label-sm text-on-surface font-semibold outline-none rounded-t cursor-pointer"
                   >
-                    <option value="execution_logs">execution_logs</option>
-                    <option value="activities">activities</option>
-                    <option value="kpi_records">kpi_records</option>
+                    {tables.length > 0 ? (
+                      tables.map(t => (
+                        <option key={t.name} value={t.name}>{t.name}</option>
+                      ))
+                    ) : (
+                      <option value="">No tables available</option>
+                    )}
                   </select>
                 </div>
 
