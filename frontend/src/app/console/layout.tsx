@@ -75,9 +75,20 @@ export default function ConsoleLayout({
           
           <button 
             onClick={() => router.push("/")}
-            className="min-w-0 text-xl md:text-headline-md font-extrabold text-primary tracking-normal hover:opacity-90 flex items-center gap-sm transition-opacity whitespace-nowrap"
+            className="min-w-0 flex items-center gap-2 text-xl md:text-headline-md font-extrabold text-primary tracking-normal hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            Struxiva <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI</span>
+            <svg className="w-8 h-8 shrink-0" viewBox="20 20 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="consoleHeaderLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#4F46E5" />
+                  <stop offset="100%" stopColor="#06B6D4" />
+                </linearGradient>
+              </defs>
+              <path d="M60 140 C 60 140, 60 110, 100 110 C 140 110, 140 80, 140 60 C 140 40, 120 30, 100 30 C 80 30, 60 40, 60 60" stroke="url(#consoleHeaderLogoGrad)" strokeWidth="14" strokeLinecap="round" />
+              <path d="M140 60 C 140 60, 140 90, 100 90 C 60 90, 60 120, 60 140 C 60 160, 80 170, 100 170 C 120 170, 140 160, 140 140" stroke="url(#consoleHeaderLogoGrad)" strokeWidth="14" strokeLinecap="round" />
+              <circle cx="100" cy="100" r="10" fill="url(#consoleHeaderLogoGrad)" />
+            </svg>
+            <span>Sturvixa <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI</span></span>
           </button>
           
           <span className="hidden md:inline-block text-[10px] uppercase font-bold text-outline-variant px-sm py-1 bg-white/5 border border-white/10 rounded-full tracking-widest">

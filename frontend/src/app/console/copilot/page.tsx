@@ -28,7 +28,7 @@ export default function CopilotPage() {
       id: "welcome",
       role: "assistant",
       content:
-        "Hello! I am your **Struxiva AI Copilot**. I have real-time analytical access to all nodes, databases, execution logs, and activities across the system. Ask me specific questions like *'Why did revenue drop last month?'*, *'Analyze customer churn'*, or *'Compare model accuracy'* and I will fetch live telemetry, generate structural SQL queries, and render interactive data visualizations for you!",
+        "Hello! I am your **Sturvixa AI Copilot**. I have real-time analytical access to all nodes, databases, execution logs, and activities across the system. Ask me specific questions like *'Why did revenue drop last month?'*, *'Analyze customer churn'*, or *'Compare model accuracy'* and I will fetch live telemetry, generate structural SQL queries, and render interactive data visualizations for you!",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -495,7 +495,7 @@ export default function CopilotPage() {
                   >
                     <span>{msg.timestamp}</span>
                     <span>•</span>
-                    <span>{isUser ? "Dayamay Das" : "Struxiva AI Core"}</span>
+                    <span>{isUser ? "Dayamay Das" : "Sturvixa AI Core"}</span>
                   </div>
                 </div>
               </div>
@@ -559,7 +559,7 @@ export default function CopilotPage() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask Struxiva AI anything..."
+              placeholder="Ask Sturvixa AI anything..."
               className="min-w-0 flex-1 bg-transparent border-none text-body-md text-on-surface placeholder:text-outline/40 h-10 outline-none focus:ring-0 focus:border-transparent select-text font-medium"
             />
             
@@ -584,7 +584,7 @@ export default function CopilotPage() {
           </form>
 
           <p className="text-center text-[9px] font-semibold text-outline mt-sm select-none">
-            Struxiva AI Copilot is operating under secure enterprise SLA compliance sandbox guidelines.
+            Sturvixa AI Copilot is operating under secure enterprise SLA compliance sandbox guidelines.
           </p>
         </div>
 

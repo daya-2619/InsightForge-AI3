@@ -3,52 +3,101 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Struxiva AI | Visionary Reliability</title>
+<title>Sturvixa AI | Visionary Reliability</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<style>body {
-    font-family: "Inter", sans-serif;
-    background-color: #13121b;
-    color: #e4e1ee;
-    overflow-x: hidden
-    }
-.glass-panel {
-    backdrop-filter: blur(16px);
-    background: rgba(31, 31, 40, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1)
-    }
-.crystalline {
-    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDJxyLQNR2mHSQWZuC5Yqpf1ASWTVIG7v5kaoJpKaqXGKmPXO9eiCUMVcGhY1fUU3PCp2KTXJuiVYEouQrqpUjV6nNlQQyLLHNrkmrhSdjZD4lCnvv19QeHY1NbZNhsswmiMd8exafdatjYXKxZ4U51b14Pd4uoIJ3PIPa9GgXk8Oufpv9nIkAaHG8_vz9rUgH_net0eHy_vDMbysViUsA7FOsSqVpetVM7FYr5XHUxXiRjyV3VSqdq7mP7hwg48qsHsWJ2rgDWPRgq);
-    opacity: 0.03;
-    pointer-events: none
-    }
-.shimmer {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 3s infinite
-    }
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-        } 100% {
-        background-position: 200% 0;
+<style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #13121b;
+            color: #e4e1ee;
+            overflow-x: hidden;
         }
-    }
-.glow-pulse {
-    animation: glow-pulse 4s infinite alternate
-    }
-@keyframes glow-pulse {
-    0% {
-        box-shadow: 0 0 5px rgba(195, 192, 255, 0.1);
-        } 100% {
-        box-shadow: 0 0 20px rgba(195, 192, 255, 0.3);
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            background: rgba(31, 31, 40, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
-    }
-.material-symbols-outlined {
-    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
-    }</style>
+        .crystalline {
+            background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDJxyLQNR2mHSQWZuC5Yqpf1ASWTVIG7v5kaoJpKaqXGKmPXO9eiCUMVcGhY1fUU3PCp2KTXJuiVYEouQrqpUjV6nNlQQyLLHNrkmrhSdjZD4lCnvv19QeHY1NbZNhsswmiMd8exafdatjYXKxZ4U51b14Pd4uoIJ3PIPa9GgXk8Oufpv9nIkAaHG8_vz9rUgH_net0eHy_vDMbysViUsA7FOsSqVpetVM7FYr5XHUxXiRjyV3VSqdq7mP7hwg48qsHsWJ2rgDWPRgq);
+            opacity: 0.03;
+            pointer-events: none;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .float-anim {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .float-anim-delay {
+            animation: float 5s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .mouse-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(195, 192, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease;
+        }
+        .hero-gradient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, #1d1b31 0%, #13121b 100%);
+            animation: gradient-shift 15s ease infinite alternate;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .shimmer, .float-anim, .float-anim-delay, .reveal, .hero-gradient {
+                animation: none !important;
+                transition: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+            #hero-canvas { display: none; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+    </style>
 <script id="tailwind-config">
         tailwind.config = {
           darkMode: "class",
@@ -147,9 +196,9 @@
 </head>
 <body class="bg-background text-on-surface">
 <!-- Top Navigation Bar -->
-<header class="bg-surface/60 dark:bg-surface/60 backdrop-blur-xl border-b border-white/10 dark:border-white/10 shadow-sm flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-50">
+<header class="bg-surface/60 dark:bg-surface/60 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-50">
 <div class="flex items-center gap-md">
-<span class="text-headline-md font-headline-md font-bold text-primary dark:text-primary tracking-tight">Struxiva AI</span>
+<span class="text-headline-md font-headline-md font-bold text-primary tracking-tight">Sturvixa AI</span>
 </div>
 <nav class="hidden md:flex items-center gap-md">
 <a class="text-primary font-bold border-b-2 border-primary pb-1 text-label-md font-label-md" href="#">Dashboard</a>
@@ -166,11 +215,11 @@
 </header>
 <main>
 <!-- Hero Section -->
-<section class="relative min-h-[921px] flex flex-col items-center justify-center pt-xl pb-lg px-margin-mobile md:px-margin-desktop overflow-hidden">
-<!-- Background Elements -->
-<div class="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-<div class="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-secondary/10 rounded-full blur-[120px] pointer-events-none"></div>
-<div class="z-10 text-center max-w-4xl mx-auto space-y-md">
+<section class="relative min-h-[921px] flex flex-col items-center justify-center pt-xl pb-lg px-margin-mobile md:px-margin-desktop overflow-hidden" id="hero">
+<div class="hero-gradient"></div>
+<canvas id="hero-canvas"></canvas>
+<div class="mouse-glow" id="hero-glow"></div>
+<div class="z-10 text-center max-w-4xl mx-auto space-y-md reveal active">
 <div class="inline-flex items-center gap-xs px-base py-1 bg-surface-container-high border border-white/10 rounded-full mb-base">
 <span class="material-symbols-outlined text-primary text-body-md" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
 <span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest">v4.0 Enterprise Intelligence Now Live</span>
@@ -182,16 +231,17 @@
                     The first enterprise-grade generative AI platform that turns complex datasets into actionable executive insights with human-level reasoning.
                 </p>
 <div class="flex flex-col md:flex-row items-center justify-center gap-md pt-base">
-<button class="w-full md:w-auto px-lg py-md bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-bold rounded-xl shadow-lg hover:scale-105 transition-transform shimmer">
+<button class="w-full md:w-auto px-lg py-md bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-bold rounded-xl shadow-lg hover:scale-105 transition-transform shimmer overflow-hidden relative">
                         Start Free Trial
                     </button>
-<button class="w-full md:w-auto px-lg py-md border border-outline-variant text-on-surface font-semibold rounded-xl hover:bg-white/5 transition-colors">
-                        Book Demo
-                    </button>
+<button class="w-full md:w-auto px-lg py-md border border-outline-variant text-on-surface font-semibold rounded-xl hover:bg-white/5 transition-colors relative overflow-hidden group">
+<span class="relative z-10">Book Demo</span>
+<div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
 </div>
 </div>
 <!-- Hero Visual: Dashboard Preview -->
-<div class="relative mt-xl w-full max-w-6xl mx-auto glass-panel rounded-2xl p-xs md:p-base shadow-2xl glow-pulse">
+<div class="relative mt-xl w-full max-w-6xl mx-auto glass-panel rounded-2xl p-xs md:p-base shadow-2xl float-anim reveal active">
 <div class="crystalline absolute inset-0 rounded-2xl"></div>
 <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-white/5 flex aspect-[16/9] md:aspect-[21/9]">
 <!-- Sidebar Mockup -->
@@ -208,15 +258,15 @@
 <div class="h-8 w-8 bg-surface-variant rounded-full"></div>
 </div>
 <div class="grid grid-cols-3 gap-md">
-<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm">
+<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm float-anim">
 <div class="h-4 w-12 bg-surface-variant rounded"></div>
 <div class="h-8 w-24 bg-primary/20 rounded"></div>
 </div>
-<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm">
+<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm float-anim-delay">
 <div class="h-4 w-12 bg-surface-variant rounded"></div>
 <div class="h-8 w-24 bg-secondary/20 rounded"></div>
 </div>
-<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm">
+<div class="h-32 bg-surface-container rounded-xl p-sm space-y-sm float-anim">
 <div class="h-4 w-12 bg-surface-variant rounded"></div>
 <div class="h-8 w-24 bg-tertiary/20 rounded"></div>
 </div>
@@ -244,7 +294,7 @@
 </div>
 </section>
 <!-- Customer Logos -->
-<section class="py-lg px-margin-desktop border-y border-white/5 bg-surface-container-lowest/50 overflow-hidden">
+<section class="py-lg px-margin-desktop border-y border-white/5 bg-surface-container-lowest/50 overflow-hidden reveal">
 <p class="text-center text-label-sm font-label-sm text-outline-variant uppercase tracking-widest mb-md">Trusted by Fortune 500 Innovators</p>
 <div class="flex flex-wrap justify-center items-center gap-xl grayscale opacity-40">
 <div class="flex items-center gap-xs text-headline-md font-bold text-on-surface"><span class="material-symbols-outlined" data-icon="architecture">architecture</span> VECTOR</div>
@@ -256,13 +306,14 @@
 </section>
 <!-- Features Bento Grid -->
 <section class="py-xl px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto">
-<div class="mb-lg text-center">
+<div class="mb-lg text-center reveal">
 <h2 class="text-headline-lg font-headline-lg text-on-surface mb-base">Precision Intelligence Infrastructure</h2>
 <p class="text-body-md font-body-md text-outline max-w-2xl mx-auto">Eliminate guesswork with features designed for high-velocity decision making.</p>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
 <!-- Large Feature: AI Analytics -->
-<div class="md:col-span-8 glass-panel rounded-2xl p-lg flex flex-col md:flex-row gap-lg group hover:border-primary/30 transition-all">
+<div class="md:col-span-8 glass-panel rounded-2xl p-lg flex flex-col md:flex-row gap-lg group hover:border-primary/30 transition-all reveal">
+<div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
 <div class="flex-1 space-y-md">
 <span class="p-base bg-primary/10 text-primary rounded-xl inline-flex material-symbols-outlined" data-icon="monitoring">monitoring</span>
 <h3 class="text-headline-md font-headline-md">Advanced AI Analytics</h3>
@@ -273,11 +324,12 @@
 </ul>
 </div>
 <div class="flex-1 relative min-h-[200px] bg-surface-container rounded-xl overflow-hidden border border-white/5">
-<img class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" data-alt="A high-fidelity 3D visualization of a complex data network with glowing blue nodes and thin crystalline connecting lines against a dark obsidian background. The scene is illuminated with a soft indigo glow, representing high-velocity data processing and artificial intelligence architecture. The lighting is moody and cinematic, emphasizing technical precision and visionary reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaOTxrbuRXodGa7amgqtcJH4YYMrMOjsW10Y98jXW-dNSo-zyymiNEFxsr7Ixrcusq9lFbFsHgdutKHbmb1or6ULKBv-cVLSBPnPrK49xaibkH0-zlFl-5CtBAZcLK0uX3tDWaMIHUvq-y7pHBsz5xQvs0gPkkwhzeDBbc_sle-HsTllTBqE95ijlO8DXrnNTl_PA_RAt_EOGyl0UiDnI1n2a988iVhwFeXgJhQNwbXe5-wGspCmmag1QEspAazKXpCBjbenmZ_FfA"/>
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaOTxrbuRXodGa7amgqtcJH4YYMrMOjsW10Y98jXW-dNSo-zyymiNEFxsr7Ixrcusq9lFbFsHgdutKHbmb1or6ULKBv-cVLSBPnPrK49xaibkH0-zlFl-5CtBAZcLK0uX3tDWaMIHUvq-y7pHBsz5xQvs0gPkkwhzeDBbc_sle-HsTllTBqE95ijlO8DXrnNTl_PA_RAt_EOGyl0UiDnI1n2a988iVhwFeXgJhQNwbXe5-wGspCmmag1QEspAazKXpCBjbenmZ_FfA"/>
 </div>
 </div>
 <!-- Small Feature: NLQ -->
-<div class="md:col-span-4 glass-panel rounded-2xl p-lg flex flex-col gap-md group hover:border-secondary/30 transition-all">
+<div class="md:col-span-4 glass-panel rounded-2xl p-lg flex flex-col gap-md group hover:border-secondary/30 transition-all reveal">
+<div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
 <span class="p-base bg-secondary/10 text-secondary rounded-xl inline-flex w-fit material-symbols-outlined" data-icon="forum">forum</span>
 <h3 class="text-headline-md font-headline-md">Natural Language Querying</h3>
 <p class="text-body-md text-outline">No SQL required. Ask questions in plain English and receive instant, structured data responses formatted for your specific business context.</p>
@@ -287,40 +339,42 @@
 </div>
 </div>
 <!-- Small Feature: Dashboard Builder -->
-<div class="md:col-span-4 glass-panel rounded-2xl p-lg flex flex-col gap-md group hover:border-tertiary/30 transition-all">
+<div class="md:col-span-4 glass-panel rounded-2xl p-lg flex flex-col gap-md group hover:border-tertiary/30 transition-all reveal">
+<div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
 <span class="p-base bg-tertiary/10 text-tertiary rounded-xl inline-flex w-fit material-symbols-outlined" data-icon="dashboard_customize">dashboard_customize</span>
 <h3 class="text-headline-md font-headline-md">Bento-Style Builder</h3>
 <p class="text-body-md text-outline">Build sophisticated executive dashboards in minutes using our intuitive drag-and-drop bento grid interface with intelligent placement.</p>
 <div class="mt-auto h-24 bg-surface-container rounded-lg overflow-hidden flex items-end px-xs gap-xs">
-<div class="flex-1 h-[30%] bg-tertiary/30 rounded-t"></div>
-<div class="flex-1 h-[60%] bg-tertiary/30 rounded-t"></div>
-<div class="flex-1 h-[90%] bg-tertiary/30 rounded-t"></div>
-<div class="flex-1 h-[50%] bg-tertiary/30 rounded-t"></div>
+<div class="flex-1 h-[30%] bg-tertiary/30 rounded-t float-anim"></div>
+<div class="flex-1 h-[60%] bg-tertiary/30 rounded-t float-anim-delay"></div>
+<div class="flex-1 h-[90%] bg-tertiary/30 rounded-t float-anim"></div>
+<div class="flex-1 h-[50%] bg-tertiary/30 rounded-t float-anim-delay"></div>
 </div>
 </div>
 <!-- Large Feature: Integrations -->
-<div class="md:col-span-8 glass-panel rounded-2xl p-lg flex flex-col justify-center items-center text-center space-y-md group hover:border-primary/30 transition-all">
+<div class="md:col-span-8 glass-panel rounded-2xl p-lg flex flex-col justify-center items-center text-center space-y-md group hover:border-primary/30 transition-all reveal">
+<div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
 <h3 class="text-headline-md font-headline-md">Unmatched Enterprise Interoperability</h3>
-<p class="text-body-md text-outline max-w-xl">Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed—Struxiva reads data at the source.</p>
+<p class="text-body-md text-outline max-w-xl">Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed—Sturvixa reads data at the source.</p>
 <div class="flex gap-md pt-base">
-<div class="p-md bg-surface-container rounded-xl border border-white/5"><span class="material-symbols-outlined text-headline-md" data-icon="database">database</span></div>
-<div class="p-md bg-surface-container rounded-xl border border-white/5"><span class="material-symbols-outlined text-headline-md" data-icon="cloud">cloud</span></div>
-<div class="p-md bg-surface-container rounded-xl border border-white/5"><span class="material-symbols-outlined text-headline-md" data-icon="hub">hub</span></div>
-<div class="p-md bg-surface-container rounded-xl border border-white/5"><span class="material-symbols-outlined text-headline-md" data-icon="integration_instructions">integration_instructions</span></div>
+<div class="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform"><span class="material-symbols-outlined text-headline-md" data-icon="database">database</span></div>
+<div class="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform"><span class="material-symbols-outlined text-headline-md" data-icon="cloud">cloud</span></div>
+<div class="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform"><span class="material-symbols-outlined text-headline-md" data-icon="hub">hub</span></div>
+<div class="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform"><span class="material-symbols-outlined text-headline-md" data-icon="integration_instructions">integration_instructions</span></div>
 </div>
 </div>
 </div>
 </section>
 <!-- Pricing Table -->
-<section class="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest/30">
+<section class="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest/30 overflow-hidden">
 <div class="max-w-5xl mx-auto">
-<div class="text-center mb-lg">
+<div class="text-center mb-lg reveal">
 <h2 class="text-headline-lg font-headline-lg text-on-surface">Scalable Intelligence Tiers</h2>
 <p class="text-body-md font-body-md text-outline">Transparent pricing for organizations at every stage of AI maturity.</p>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
 <!-- Basic -->
-<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border border-white/5">
+<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border border-white/5 reveal">
 <div class="space-y-xs">
 <p class="text-label-sm font-label-sm text-outline uppercase tracking-widest">Startup</p>
 <h3 class="text-headline-md font-headline-md">$499<span class="text-body-md text-outline">/mo</span></h3>
@@ -334,7 +388,7 @@
 <button class="w-full py-sm border border-outline-variant rounded-lg hover:bg-white/5 transition-colors font-semibold">Get Started</button>
 </div>
 <!-- Pro (Featured) -->
-<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border-primary relative transform scale-105 shadow-2xl z-20">
+<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border-primary relative transform md:scale-105 shadow-2xl z-20 reveal">
 <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-base py-1 bg-primary text-on-primary text-[10px] font-bold rounded-full uppercase tracking-tighter">Most Popular</div>
 <div class="crystalline absolute inset-0 rounded-2xl"></div>
 <div class="space-y-xs">
@@ -347,10 +401,10 @@
 <li class="flex items-center gap-sm text-label-md"><span class="material-symbols-outlined text-primary text-body-md" data-icon="done">done</span> Unlimited AI Queries</li>
 <li class="flex items-center gap-sm text-label-md"><span class="material-symbols-outlined text-primary text-body-md" data-icon="done">done</span> Predictor API Access</li>
 </ul>
-<button class="w-full py-sm bg-primary text-on-primary rounded-lg shadow-lg hover:brightness-110 transition-all font-bold">Start Free Trial</button>
+<button class="w-full py-sm bg-primary text-on-primary rounded-lg shadow-lg hover:brightness-110 transition-all font-bold shimmer relative overflow-hidden">Start Free Trial</button>
 </div>
 <!-- Enterprise -->
-<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border border-white/5">
+<div class="glass-panel p-lg rounded-2xl flex flex-col space-y-md border border-white/5 reveal">
 <div class="space-y-xs">
 <p class="text-label-sm font-label-sm text-outline uppercase tracking-widest">Enterprise</p>
 <h3 class="text-headline-md font-headline-md">Custom</h3>
@@ -368,11 +422,11 @@
 </section>
 <!-- Testimonial -->
 <section class="py-xl px-margin-desktop text-center">
-<div class="max-w-3xl mx-auto glass-panel p-xl rounded-[2rem] border-white/10 relative">
+<div class="max-w-3xl mx-auto glass-panel p-xl rounded-[2rem] border-white/10 relative reveal">
 <span class="material-symbols-outlined text-headline-xl text-primary/20 absolute -top-8 left-1/2 -translate-x-1/2" data-icon="format_quote" style="font-size: 80px;">format_quote</span>
-<p class="text-headline-md italic font-light text-on-surface mb-lg">"Struxiva AI didn't just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation."</p>
+<p class="text-headline-md italic font-light text-on-surface mb-lg">"Sturvixa AI didn't just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation."</p>
 <div class="flex flex-col items-center gap-base">
-<img alt="CEO Portrait" class="w-16 h-16 rounded-full border-2 border-primary" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBliHfxAgSkrnilnO_mr2EtqlHRD1NNnmQf1XOfHu_menIuZ6VUT7m4fJhWcGiDmi0PxZjbk_Ok4fXib1IepMeQBecyJy9-gX_c7njIDlkw9LhcibNMURIhl0yrsCzbuddGiqdBinoPPMGKORP7ZrmQObCcb4W8SE8-FYwg_qcjYdVeVAk4SCx4FmgI8ou132nzpXX8imzivIiWqy0vQgqkulPEhCC_VNlBiDpxhxXGrlQhyt1loQ5dNa4kiOFcTPJVZhb79XW1OE0G"/>
+<img alt="Sarah J. Chen" class="w-16 h-16 rounded-full border-2 border-primary" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBliHfxAgSkrnilnO_mr2EtqlHRD1NNnmQf1XOfHu_menIuZ6VUT7m4fJhWcGiDmi0PxZjbk_Ok4fXib1IepMeQBecyJy9-gX_c7njIDlkw9LhcibNMURIhl0yrsCzbuddGiqdBinoPPMGKORP7ZrmQObCcb4W8SE8-FYwg_qcjYdVeVAk4SCx4FmgI8ou132nzpXX8imzivIiWqy0vQgqkulPEhCC_VNlBiDpxhxXGrlQhyt1loQ5dNa4kiOFcTPJVZhb79XW1OE0G"/>
 <div>
 <p class="font-bold text-on-surface">Sarah J. Chen</p>
 <p class="text-label-sm text-outline uppercase">Chief Data Officer, Global Logistics Corp</p>
@@ -382,16 +436,16 @@
 </section>
 </main>
 <!-- Footer -->
-<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md">
+<footer class="bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md">
 <div class="flex flex-col items-center md:items-start gap-xs">
-<span class="text-label-md font-bold text-on-surface">Struxiva AI</span>
-<p class="text-label-sm font-label-sm text-outline">© 2024 Struxiva AI. Visionary Reliability.</p>
+<span class="text-label-md font-bold text-on-surface">Sturvixa AI</span>
+<p class="text-label-sm font-label-sm text-outline">© 2024 Sturvixa AI. Visionary Reliability.</p>
 </div>
 <div class="flex flex-wrap justify-center gap-md">
-<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
-<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
-<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80 hover:opacity-100" href="#">Security</a>
-<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80 hover:opacity-100" href="#">Status</a>
+<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80" href="#">Privacy Policy</a>
+<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80" href="#">Terms of Service</a>
+<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80" href="#">Security</a>
+<a class="text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors opacity-80" href="#">Status</a>
 </div>
 <div class="flex gap-md">
 <a class="text-outline hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined" data-icon="public">public</span></a>
@@ -399,29 +453,148 @@
 </div>
 </footer>
 <script>
-        // Micro-interactions and subtle effects
-        document.addEventListener('mousemove', (e) => {
-            const cursor = { x: e.clientX, y: e.clientY };
-            // Optional: add a subtle mouse-following glow effect here if desired
-        });
+        (function() {
+            // Particle System Configuration
+            const canvas = document.getElementById('hero-canvas');
+            const ctx = canvas.getContext('2d');
+            const heroSection = document.getElementById('hero');
+            const heroGlow = document.getElementById('hero-glow');
+            
+            let particles = [];
+            let mouse = { x: null, y: null, active: false };
+            const particleCount = 60;
+            const connectionDistance = 150;
+            const repulsionRadius = 150;
+            const repulsionStrength = 0.5;
 
-        // Simple reveal animation on scroll
-        const observerOptions = {
-            threshold: 0.1
-        };
+            class Particle {
+                constructor() {
+                    this.init();
+                }
+                init() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.baseX = this.x;
+                    this.baseY = this.y;
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.vy = (Math.random() - 0.5) * 0.4;
+                }
+                update() {
+                    // Drift
+                    this.x += this.vx;
+                    this.y += this.vy;
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('opacity-100', 'translate-y-0');
-                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                    // Bounce off edges
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                    // Mouse repulsion
+                    if (mouse.active) {
+                        const dx = this.x - mouse.x;
+                        const dy = this.y - mouse.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < repulsionRadius) {
+                            const force = (repulsionRadius - distance) / repulsionRadius;
+                            this.x += (dx / distance) * force * 5;
+                            this.y += (dy / distance) * force * 5;
+                        }
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(195, 192, 255, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                canvas.width = heroSection.offsetWidth;
+                canvas.height = heroSection.offsetHeight;
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < connectionDistance) {
+                            ctx.strokeStyle = `rgba(195, 192, 255, ${0.1 * (1 - distance / connectionDistance)})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateParticles);
+            }
+
+            // Mouse tracking glow
+            heroSection.addEventListener('mousemove', (e) => {
+                const rect = heroSection.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+                mouse.active = true;
+
+                heroGlow.style.left = mouse.x + 'px';
+                heroGlow.style.top = mouse.y + 'px';
+                heroGlow.style.opacity = '1';
+            });
+
+            heroSection.addEventListener('mouseleave', () => {
+                mouse.active = false;
+                heroGlow.style.opacity = '0';
+            });
+
+            window.addEventListener('resize', initParticles);
+            initParticles();
+            animateParticles();
+
+            // Intersection Observer for Entrance Reveals
+            const revealOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        // Optional: unobserve after reveal
+                        // revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, revealOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                revealObserver.observe(el);
+            });
+
+            // Smooth parallax for hero images
+            window.addEventListener('scroll', () => {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const scrolled = window.pageYOffset;
+                const heroVisual = document.querySelector('.float-anim');
+                if (heroVisual && scrolled < 1000) {
+                    heroVisual.style.transform = `translateY(${scrolled * 0.1}px)`;
                 }
             });
-        }, observerOptions);
 
-        document.querySelectorAll('.glass-panel').forEach(el => {
-            el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-1000');
-            observer.observe(el);
-        });
+        })();
     </script>
 </body></html>

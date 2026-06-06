@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Struxiva AI | Visionary Reliability",
+  title: "Sturvixa AI | Visionary Reliability",
   description: "The first enterprise-grade generative AI platform that turns complex datasets into actionable executive insights with human-level reasoning.",
   keywords: ["AI", "Analytics", "FastAPI", "Next.js", "Enterprise Intelligence", "Data Dashboard"],
 };

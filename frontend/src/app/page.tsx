@@ -10,7 +10,7 @@ export default function LandingPage() {
   // Interactive hooks for authentication and mobile menu
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [email, setEmail] = useState("admin@struxiva.ai");
+  const [email, setEmail] = useState("admin@sturvixa.ai");
   const [password, setPassword] = useState("********");
   const [authError, setAuthError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -293,9 +293,20 @@ export default function LandingPage() {
 
           <Link 
             href="/"
-            className="min-w-0 text-xl sm:text-headline-md font-headline-md font-bold text-primary tracking-normal cursor-pointer whitespace-nowrap"
+            className="min-w-0 flex items-center gap-2 text-xl sm:text-headline-md font-headline-md font-bold text-primary tracking-normal cursor-pointer whitespace-nowrap"
           >
-            Struxiva AI
+            <svg className="w-8 h-8 shrink-0" viewBox="20 20 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="headerLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#4F46E5" />
+                  <stop offset="100%" stopColor="#06B6D4" />
+                </linearGradient>
+              </defs>
+              <path d="M60 140 C 60 140, 60 110, 100 110 C 140 110, 140 80, 140 60 C 140 40, 120 30, 100 30 C 80 30, 60 40, 60 60" stroke="url(#headerLogoGrad)" strokeWidth="14" strokeLinecap="round" />
+              <path d="M140 60 C 140 60, 140 90, 100 90 C 60 90, 60 120, 60 140 C 60 160, 80 170, 100 170 C 120 170, 140 160, 140 140" stroke="url(#headerLogoGrad)" strokeWidth="14" strokeLinecap="round" />
+              <circle cx="100" cy="100" r="10" fill="url(#headerLogoGrad)" />
+            </svg>
+            <span>Sturvixa AI</span>
           </Link>
         </div>
         
@@ -637,7 +648,7 @@ export default function LandingPage() {
               <div className="space-y-md">
                 <h3 className="text-headline-md font-headline-md">Unmatched Enterprise Interoperability</h3>
                 <p className="w-full max-w-3xl text-lg leading-8 text-gray-400 text-pretty">
-                  Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed-Struxiva reads data at the source.
+                  Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed-Sturvixa reads data at the source.
                 </p>
               </div>
               <div className="flex justify-center md:justify-start gap-md pt-base">
@@ -772,7 +783,7 @@ export default function LandingPage() {
             <span className="text-[120px] font-serif font-bold text-primary/10 absolute -top-16 left-1/2 -translate-x-1/2 select-none">&quot;</span>
             
             <p className="text-headline-md italic font-light text-on-surface mb-lg leading-relaxed relative z-10">
-              &quot;Struxiva AI didn&apos;t just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation.&quot;
+              &quot;Sturvixa AI didn&apos;t just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation.&quot;
             </p>
             <div className="flex flex-col items-center gap-base relative z-10">
               <img 
@@ -792,8 +803,8 @@ export default function LandingPage() {
       {/* Footer conforming strictly to mockup navigation items */}
       <footer className="bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md z-30">
         <div className="flex flex-col items-center md:items-start gap-xs text-center md:text-left">
-          <span className="text-label-md font-bold text-on-surface">Struxiva AI</span>
-          <p className="text-label-sm font-label-sm text-outline">(c) 2026 Struxiva AI. Visionary Reliability.</p>
+          <span className="text-label-md font-bold text-on-surface">Sturvixa AI</span>
+          <p className="text-label-sm font-label-sm text-outline">(c) 2026 Sturvixa AI. Visionary Reliability.</p>
         </div>
         <div className="flex flex-wrap justify-center gap-md">
           <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Privacy Policy</a>
@@ -872,7 +883,7 @@ export default function LandingPage() {
                   <>
                     <div className="text-center mb-6 space-y-2 relative z-10">
                       <span className="text-primary font-extrabold tracking-normal text-2xl sm:text-3xl">
-                        Struxiva <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Console</span>
+                        Sturvixa <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Console</span>
                       </span>
                       <p className="text-sm text-outline">Enter credentials to access the enterprise intelligence suite.</p>
                     </div>
@@ -891,7 +902,7 @@ export default function LandingPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full min-w-0 bg-surface-container border-b-2 border-outline-variant focus:border-primary px-4 py-3 text-base text-on-surface outline-none rounded-t-lg transition-colors"
-                          placeholder="admin@struxiva.ai"
+                          placeholder="admin@sturvixa.ai"
                         />
                       </div>
 
@@ -1058,7 +1069,7 @@ export default function LandingPage() {
             <div className="space-y-lg flex flex-col h-full overflow-y-auto">
               <div className="flex justify-between items-center pb-sm border-b border-white/5">
                 <span className="text-headline-md font-bold text-primary tracking-tight">
-                  Struxiva AI
+                  Sturvixa AI
                 </span>
                 
                 <button 

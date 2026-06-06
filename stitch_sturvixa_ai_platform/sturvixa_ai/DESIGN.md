@@ -1,5 +1,5 @@
 ---
-name: Struxiva AI
+name: Sturvixa AI
 colors:
   surface: '#13121b'
   surface-dim: '#13121b'

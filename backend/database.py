@@ -40,7 +40,7 @@ def get_engine():
     
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        db_url = "sqlite:///./struxiva.db"
+        db_url = "sqlite:///./sturvixa.db"
         
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
