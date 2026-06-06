@@ -168,7 +168,7 @@ export default function ModelsPage() {
   };
 
   return (
-    <div className="space-y-lg flex-1 relative flex flex-col min-h-0 min-w-0 select-none">
+    <div className="space-y-lg relative flex flex-col min-w-0 select-none">
       
       {/* Page Header */}
       <section className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-md shrink-0">
@@ -194,10 +194,10 @@ export default function ModelsPage() {
       </section>
 
       {/* Main Two-Column Workspace */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-gutter min-h-0 min-w-0 overflow-y-auto lg:overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter min-w-0">
         
         {/* Left Column: Interactive Parameters Panel */}
-        <div className="lg:col-span-4 min-w-0 flex flex-col gap-md lg:max-h-full">
+        <div className="lg:col-span-4 min-w-0 flex flex-col gap-md">
           <div className="glass-panel rounded-2xl p-md md:p-lg space-y-md flex-1 flex flex-col justify-between">
             <div className="space-y-md">
               <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
@@ -279,7 +279,7 @@ export default function ModelsPage() {
         </div>
 
         {/* Right Column: Model Cards & Live Telemetry Console */}
-        <div className="lg:col-span-8 min-w-0 flex flex-col gap-md lg:max-h-full">
+        <div className="lg:col-span-8 min-w-0 flex flex-col gap-md">
           
           {/* Models Grid View */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-md shrink-0">

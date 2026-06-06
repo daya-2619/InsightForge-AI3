@@ -176,7 +176,7 @@ export default function AnalyticsPage() {
   const diffSign = parseFloat(accuracyDiff) >= 0 ? "+" : "";
 
   return (
-    <div className="space-y-lg flex-1 relative flex flex-col min-h-0 min-w-0">
+    <div className="space-y-lg relative flex flex-col min-w-0">
       
       {/* Workspace Toolbar */}
       <section className="min-h-12 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-sm px-xs pb-sm sm:pb-0 shrink-0 select-none">
@@ -214,7 +214,7 @@ export default function AnalyticsPage() {
       </section>
 
       {/* Main Content viewport */}
-      <div className="flex-1 overflow-y-auto space-y-md min-h-0 pr-1">
+      <div className="space-y-md pr-1">
         
         {viewMode === "layout" ? (
           <>
