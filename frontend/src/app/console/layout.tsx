@@ -77,16 +77,22 @@ export default function ConsoleLayout({
             onClick={() => router.push("/")}
             className="min-w-0 flex items-center gap-2 text-xl md:text-headline-md font-extrabold text-primary tracking-normal hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            <svg className="w-8 h-8 shrink-0" viewBox="20 20 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-8 h-8 shrink-0" viewBox="110 70 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="consoleHeaderLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#4F46E5" />
-                  <stop offset="100%" stopColor="#06B6D4" />
+                <linearGradient id="consoleHeaderLogoPrimaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#CBD5E1" />
+                  <stop offset="100%" stopColor="#F8FAFC" />
+                </linearGradient>
+                <linearGradient id="consoleHeaderLogoAccentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#0D9488" />
+                  <stop offset="100%" stopColor="#2DD4BF" />
                 </linearGradient>
               </defs>
-              <path d="M60 140 C 60 140, 60 110, 100 110 C 140 110, 140 80, 140 60 C 140 40, 120 30, 100 30 C 80 30, 60 40, 60 60" stroke="url(#consoleHeaderLogoGrad)" strokeWidth="14" strokeLinecap="round" />
-              <path d="M140 60 C 140 60, 140 90, 100 90 C 60 90, 60 120, 60 140 C 60 160, 80 170, 100 170 C 120 170, 140 160, 140 140" stroke="url(#consoleHeaderLogoGrad)" strokeWidth="14" strokeLinecap="round" />
-              <circle cx="100" cy="100" r="10" fill="url(#consoleHeaderLogoGrad)" />
+              <g transform="translate(140, 80)">
+                <path d="M0 40 C 0 10, 30 0, 60 0 L 120 0 L 120 30 L 60 30 C 45 30, 40 35, 40 45 L 40 70 L 10 70 L 10 40 Z" fill="url(#consoleHeaderLogoPrimaryGrad)" />
+                <path d="M120 120 C 120 150, 90 160, 60 160 L 0 160 L 0 130 L 60 130 C 75 130, 80 125, 80 115 L 80 90 L 110 90 L 110 120 Z" fill="url(#consoleHeaderLogoPrimaryGrad)" />
+                <rect x="35" y="75" width="50" height="10" rx="5" fill="url(#consoleHeaderLogoAccentGrad)" />
+              </g>
             </svg>
             <span>Sturvixa <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI</span></span>
           </button>
