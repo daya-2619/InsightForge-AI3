@@ -936,7 +936,7 @@ async def ingest_file(
         raw_records = parse_uploaded_file(content, file.filename)
         
         # 2. Validate fields
-        converted_records = validate_and_convert_records(table_name, raw_records)
+        converted_records = validate_and_convert_records(db, table_name, raw_records)
         
         # 3. Perform database transaction
         count = ingest_data(db, table_name, converted_records, mode)
