@@ -83,6 +83,9 @@ def parse_order_date(date_str):
     raise ValueError(f"Could not parse order date: {date_str}")
 
 def run_etl_pipeline(db: Session, base_data_dir: str):
+    from database import init_db
+    init_db()
+    
     logs = []
     def log(msg):
         timestamp = datetime.now().strftime("%H:%M:%S")

@@ -8,8 +8,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from backend/.env explicitly
+backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(backend_env_path, override=True)
 
 from database import get_db, init_db, KPIRecord, ExecutionLog, Activity, DimCustomer, DimProduct, DimGrossPrice, FactOrder
 from ingestion_service import parse_uploaded_file, validate_and_convert_records, ingest_data
@@ -31,7 +32,9 @@ app.add_middleware(
 # Startup DB initialization
 @app.on_event("startup")
 def startup_event():
-    init_db()
+    db_url = os.getenv("DATABASE_URL", "")
+    if not db_url or db_url.startswith("sqlite"):
+        init_db()
 
 # Pydantic schemas
 class ChatMessage(BaseModel):
@@ -93,55 +96,63 @@ def get_dashboard_stats(
         pass
 
     if not has_consolidated_data:
-        # Fetch KPI record
-        kpi = db.query(KPIRecord).filter(
-            KPIRecord.region == region,
-            KPIRecord.days == days
-        ).first()
-        
-        if not kpi:
-            # Fallback to Global 30 days if not found
-            kpi = db.query(KPIRecord).filter(
-                KPIRecord.region == "Global",
-                KPIRecord.days == 30
-            ).first()
-
-        # Fetch recent activities
-        activities = db.query(Activity).order_by(Activity.id.desc()).all()
-        
-        # Parse JSON values
         try:
-            chart_data = json.loads(kpi.revenue_chart_data)
-            region_data = json.loads(kpi.region_data)
-        except Exception:
-            chart_data = {"actual": [0], "forecast": [0]}
-            region_data = {}
+            # Fetch KPI record
+            kpi = db.query(KPIRecord).filter(
+                KPIRecord.region == region,
+                KPIRecord.days == days
+            ).first()
+            
+            if not kpi:
+                # Fallback to Global 30 days if not found
+                kpi = db.query(KPIRecord).filter(
+                    KPIRecord.region == "Global",
+                    KPIRecord.days == 30
+                ).first()
 
-        return {
-            "region": kpi.region,
-            "days": kpi.days,
-            "total_revenue": kpi.total_revenue,
-            "revenue_growth": kpi.revenue_growth,
-            "net_profit": kpi.net_profit,
-            "profit_growth": kpi.profit_growth,
-            "active_users": kpi.active_users,
-            "user_growth": kpi.user_growth,
-            "growth_rate": kpi.growth_rate,
-            "growth_change": kpi.growth_change,
-            "chart_data": chart_data,
-            "region_data": region_data,
-            "recent_activities": [
-                {
-                    "id": act.id,
-                    "entity_name": act.entity_name,
-                    "tier": act.tier,
-                    "status": act.status,
-                    "value": act.value,
-                    "confidence": act.confidence
-                }
-                for act in activities
-            ]
-        }
+            # Fetch recent activities
+            activities = db.query(Activity).order_by(Activity.id.desc()).all()
+            
+            # Parse JSON values
+            try:
+                chart_data = json.loads(kpi.revenue_chart_data) if kpi else {"actual": [0], "forecast": [0]}
+                region_data = json.loads(kpi.region_data) if kpi else {}
+            except Exception:
+                chart_data = {"actual": [0], "forecast": [0]}
+                region_data = {}
+
+            return {
+                "region": kpi.region if kpi else region,
+                "days": kpi.days if kpi else days,
+                "total_revenue": kpi.total_revenue if kpi else "₹0.00",
+                "revenue_growth": kpi.revenue_growth if kpi else "0.0%",
+                "net_profit": kpi.net_profit if kpi else "₹0.00",
+                "profit_growth": kpi.profit_growth if kpi else "0.0%",
+                "active_users": kpi.active_users if kpi else "0",
+                "user_growth": kpi.user_growth if kpi else "0.0%",
+                "growth_rate": kpi.growth_rate if kpi else "0.0%",
+                "growth_change": kpi.growth_change if kpi else "0.0%",
+                "chart_data": chart_data,
+                "region_data": region_data,
+                "recent_activities": [
+                    {
+                        "id": act.id,
+                        "entity_name": act.entity_name,
+                        "tier": act.tier,
+                        "status": act.status,
+                        "value": act.value,
+                        "confidence": act.confidence
+                    }
+                    for act in activities
+                ]
+            }
+        except Exception:
+            return {
+                "region": region, "days": days, "total_revenue": "₹0.00", "revenue_growth": "0.0%",
+                "net_profit": "₹0.00", "profit_growth": "0.0%", "active_users": "0", "user_growth": "0.0%",
+                "growth_rate": "0.0%", "growth_change": "0.0%", "chart_data": {"actual": [0]*7, "forecast": [0]*7},
+                "region_data": {}, "recent_activities": []
+            }
 
     # Dynamic calculation using consolidated sales tables!
     try:
@@ -320,47 +331,55 @@ def get_dashboard_stats(
     except Exception as e:
         import traceback
         traceback.print_exc()
-        kpi = db.query(KPIRecord).filter(
-            KPIRecord.region == region,
-            KPIRecord.days == days
-        ).first()
-        if not kpi:
-            kpi = db.query(KPIRecord).filter(
-                KPIRecord.region == "Global",
-                KPIRecord.days == 30
-            ).first()
-        activities = db.query(Activity).order_by(Activity.id.desc()).all()
         try:
-            chart_data = json.loads(kpi.revenue_chart_data)
-            region_data = json.loads(kpi.region_data)
+            kpi = db.query(KPIRecord).filter(
+                KPIRecord.region == region,
+                KPIRecord.days == days
+            ).first()
+            if not kpi:
+                kpi = db.query(KPIRecord).filter(
+                    KPIRecord.region == "Global",
+                    KPIRecord.days == 30
+                ).first()
+            activities = db.query(Activity).order_by(Activity.id.desc()).all()
+            try:
+                chart_data = json.loads(kpi.revenue_chart_data) if kpi else {"actual": [0], "forecast": [0]}
+                region_data = json.loads(kpi.region_data) if kpi else {}
+            except Exception:
+                chart_data = {"actual": [0], "forecast": [0]}
+                region_data = {}
+            return {
+                "region": kpi.region if kpi else region,
+                "days": kpi.days if kpi else days,
+                "total_revenue": kpi.total_revenue if kpi else "₹0.00",
+                "revenue_growth": kpi.revenue_growth if kpi else "0.0%",
+                "net_profit": kpi.net_profit if kpi else "₹0.00",
+                "profit_growth": kpi.profit_growth if kpi else "0.0%",
+                "active_users": kpi.active_users if kpi else "0",
+                "user_growth": kpi.user_growth if kpi else "0.0%",
+                "growth_rate": kpi.growth_rate if kpi else "0.0%",
+                "growth_change": kpi.growth_change if kpi else "0.0%",
+                "chart_data": chart_data,
+                "region_data": region_data,
+                "recent_activities": [
+                    {
+                        "id": act.id,
+                        "entity_name": act.entity_name,
+                        "tier": act.tier,
+                        "status": act.status,
+                        "value": act.value,
+                        "confidence": act.confidence
+                    }
+                    for act in activities
+                ]
+            }
         except Exception:
-            chart_data = {"actual": [0], "forecast": [0]}
-            region_data = {}
-        return {
-            "region": kpi.region,
-            "days": kpi.days,
-            "total_revenue": kpi.total_revenue,
-            "revenue_growth": kpi.revenue_growth,
-            "net_profit": kpi.net_profit,
-            "profit_growth": kpi.profit_growth,
-            "active_users": kpi.active_users,
-            "user_growth": kpi.user_growth,
-            "growth_rate": kpi.growth_rate,
-            "growth_change": kpi.growth_change,
-            "chart_data": chart_data,
-            "region_data": region_data,
-            "recent_activities": [
-                {
-                    "id": act.id,
-                    "entity_name": act.entity_name,
-                    "tier": act.tier,
-                    "status": act.status,
-                    "value": act.value,
-                    "confidence": act.confidence
-                }
-                for act in activities
-            ]
-        }
+            return {
+                "region": region, "days": days, "total_revenue": "₹0.00", "revenue_growth": "0.0%",
+                "net_profit": "₹0.00", "profit_growth": "0.0%", "active_users": "0", "user_growth": "0.0%",
+                "growth_rate": "0.0%", "growth_change": "0.0%", "chart_data": {"actual": [0]*7, "forecast": [0]*7},
+                "region_data": {}, "recent_activities": []
+            }
 
 @app.get("/api/logs")
 def get_logs(
@@ -368,30 +387,36 @@ def get_logs(
     status: Optional[str] = Query(None, description="Filter by status (Success, Failed)"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(ExecutionLog)
-    
-    if search:
-        query = query.filter(ExecutionLog.model_id.ilike(f"%{search}%"))
-    if status:
-        query = query.filter(ExecutionLog.status == status)
+    try:
+        query = db.query(ExecutionLog)
         
-    logs = query.order_by(ExecutionLog.id.desc()).all()
-    
-    return [
-        {
-            "id": log.id,
-            "timestamp": log.timestamp,
-            "model_id": log.model_id,
-            "status": log.status,
-            "latency": log.latency,
-            "cost": log.cost
-        }
-        for log in logs
-    ]
+        if search:
+            query = query.filter(ExecutionLog.model_id.ilike(f"%{search}%"))
+        if status:
+            query = query.filter(ExecutionLog.status == status)
+            
+        logs = query.order_by(ExecutionLog.id.desc()).all()
+        
+        return [
+            {
+                "id": log.id,
+                "timestamp": log.timestamp,
+                "model_id": log.model_id,
+                "status": log.status,
+                "latency": log.latency,
+                "cost": log.cost
+            }
+            for log in logs
+        ]
+    except Exception:
+        return []
 
 @app.get("/api/models/telemetry")
 def get_models_telemetry(db: Session = Depends(get_db)):
-    logs = db.query(ExecutionLog).all()
+    try:
+        logs = db.query(ExecutionLog).all()
+    except Exception:
+        logs = []
     
     models_def = {
         "IF-GPT-4o-V2": {
@@ -777,6 +802,10 @@ class TestConnectionRequest(BaseModel):
 
 @app.get("/api/neondb/config")
 def get_neondb_config():
+    # Make sure we load the latest from backend/.env first
+    backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv(backend_env_path, override=True)
+    
     db_url = os.getenv("DATABASE_URL", "")
     
     # Mask connection URL for safety
@@ -873,33 +902,41 @@ def save_neondb_config(config: NeonDBConfig):
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
         
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    env_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    ]
     
-    # Read existing variables
-    existing_vars = {}
-    if os.path.exists(env_path):
-        with open(env_path, "r") as f:
-            for line in f:
-                if "=" in line and not line.strip().startswith("#"):
-                    parts = line.strip().split("=", 1)
-                    if len(parts) == 2:
-                        existing_vars[parts[0].strip()] = parts[1].strip()
-                        
-    existing_vars["DATABASE_URL"] = url
-    
-    # Write back to .env
-    with open(env_path, "w") as f:
-        for k, v in existing_vars.items():
-            f.write(f"{k}={v}\n")
+    for path in env_paths:
+        existing_vars = {}
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                for line in f:
+                    if "=" in line and not line.strip().startswith("#"):
+                        parts = line.strip().split("=", 1)
+                        if len(parts) == 2:
+                            existing_vars[parts[0].strip()] = parts[1].strip()
+                            
+            existing_vars["DATABASE_URL"] = url
+            
+            with open(path, "w") as f:
+                for k, v in existing_vars.items():
+                    f.write(f"{k}={v}\n")
             
     # Reload environment
-    load_dotenv(env_path, override=True)
+    backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv(backend_env_path, override=True)
+    
+    from database import reset_db_connection, init_db
+    reset_db_connection()
     
     try:
+        # Forcefully initialize database tables in the new database URL
         init_db()
         return {"status": "success", "message": "NeonDB connection string saved and tables initialized successfully."}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Saved config but failed to initialize tables: {str(e)}")
+        reset_db_connection()
+        raise HTTPException(status_code=400, detail=f"Saved URL, but failed to connect and initialize tables in the database: {str(e)}")
 
 @app.post("/api/neondb/test-connection")
 def test_neondb_connection(req: TestConnectionRequest):
@@ -916,8 +953,11 @@ def test_neondb_connection(req: TestConnectionRequest):
     try:
         # Create temp engine and try to connect
         temp_engine = create_engine(url, connect_args={"connect_timeout": 5})
-        with temp_engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
+        try:
+            with temp_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+        finally:
+            temp_engine.dispose()
         return {"status": "success", "message": "Successfully established handshake with NeonDB database."}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Handshake failed: {str(e)}")

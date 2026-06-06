@@ -12,6 +12,17 @@ _current_url = None
 
 Base = declarative_base()
 
+def reset_db_connection():
+    global _engine, _SessionLocal, _current_url
+    if _engine is not None:
+        try:
+            _engine.dispose()
+        except Exception:
+            pass
+    _engine = None
+    _SessionLocal = None
+    _current_url = None
+
 def get_engine():
     global _engine, _current_url
     
