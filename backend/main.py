@@ -818,14 +818,17 @@ def get_neondb_config():
             masked_url = "postgresql://****"
             
     # Trigger get_engine to evaluate connection reachability
-    from database import get_engine, _use_sqlite_fallback
-    get_engine()
+    from database import get_engine, _db_offline
+    try:
+        get_engine()
+    except Exception:
+        pass
     
     return {
         "database_url": db_url,
         "masked_url": masked_url,
         "is_configured": bool(db_url and not db_url.startswith("sqlite")),
-        "active_status": "SQLite Fallback" if _use_sqlite_fallback else ("Connected" if db_url else "SQLite Local Fallback")
+        "active_status": "Offline" if _db_offline else ("Connected" if db_url else "SQLite Local Fallback")
     }
 
 @app.get("/api/neondb/tables")

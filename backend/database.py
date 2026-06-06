@@ -12,13 +12,13 @@ from sqlalchemy import text
 _engine = None
 _SessionLocal = None
 _current_url = None
-_use_sqlite_fallback = False
-_last_fallback_check = 0
+_db_offline = False
+_last_offline_check = 0
 
 Base = declarative_base()
 
 def reset_db_connection():
-    global _engine, _SessionLocal, _current_url, _use_sqlite_fallback, _last_fallback_check
+    global _engine, _SessionLocal, _current_url, _db_offline, _last_offline_check
     if _engine is not None:
         try:
             _engine.dispose()
@@ -27,11 +27,11 @@ def reset_db_connection():
     _engine = None
     _SessionLocal = None
     _current_url = None
-    _use_sqlite_fallback = False
-    _last_fallback_check = 0
+    _db_offline = False
+    _last_offline_check = 0
 
 def get_engine():
-    global _engine, _current_url, _use_sqlite_fallback, _last_fallback_check
+    global _engine, _current_url, _db_offline, _last_offline_check
     
     # Reload environment to pick up any runtime changes to .env
     from dotenv import load_dotenv
@@ -47,32 +47,39 @@ def get_engine():
         
     current_time = time.time()
     url_changed = _engine is None or db_url != _current_url
-    retry_postgres = _use_sqlite_fallback and (current_time - _last_fallback_check > 30)
+    retry_db = _db_offline and (current_time - _last_offline_check > 30)
     
-    if url_changed or retry_postgres:
+    if url_changed or retry_db:
         _current_url = db_url
         _last_fallback_check = current_time
         
-        if db_url.startswith("postgresql"):
-            try:
-                # Test connectivity with a short 2s timeout
-                test_engine = create_engine(db_url, connect_args={"connect_timeout": 2})
-                with test_engine.connect() as conn:
-                    conn.execute(text("SELECT 1"))
-                test_engine.dispose()
+        # Test connectivity with a short 2s timeout
+        try:
+            connect_args = {}
+            if db_url.startswith("sqlite"):
+                connect_args = {"check_same_thread": False}
+            elif db_url.startswith("postgresql"):
+                connect_args = {"connect_timeout": 2}
                 
-                # Connection successful!
+            test_engine = create_engine(db_url, connect_args=connect_args)
+            with test_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            test_engine.dispose()
+            
+            # Connection successful! Create actual engine
+            if db_url.startswith("postgresql"):
                 _engine = create_engine(db_url, connect_args={"connect_timeout": 5})
-                _use_sqlite_fallback = False
-            except Exception as e:
-                print(f"Warning: PostgreSQL database is unreachable. Falling back to SQLite. Error: {str(e)}")
-                fallback_url = "sqlite:///./insightforge.db"
-                _engine = create_engine(fallback_url, connect_args={"check_same_thread": False})
-                _use_sqlite_fallback = True
-        else:
-            # SQLite URL
-            _engine = create_engine(db_url, connect_args={"check_same_thread": False})
-            _use_sqlite_fallback = False
+            else:
+                _engine = create_engine(db_url, connect_args={"check_same_thread": False})
+            _db_offline = False
+        except Exception as e:
+            print(f"Warning: Database connection is offline. Error: {str(e)}")
+            _db_offline = True
+            _engine = None
+            raise RuntimeError(f"Database connection is offline: {str(e)}")
+            
+    if _db_offline or _engine is None:
+        raise RuntimeError("Database connection is currently offline. Please check connection settings.")
         
     return _engine
 
@@ -173,11 +180,17 @@ class FactOrder(Base):
     company = Column(String, nullable=False)  # "parent" or "child"
 
 def get_db():
-    db = SessionLocal()
+    from fastapi import HTTPException
     try:
+        db = SessionLocal()
         yield db
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database connection offline: {str(e)}")
     finally:
-        db.close()
+        try:
+            db.close()
+        except Exception:
+            pass
 
 def init_db():
     Base.metadata.create_all(bind=get_engine())

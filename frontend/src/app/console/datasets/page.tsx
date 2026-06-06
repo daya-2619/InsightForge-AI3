@@ -71,9 +71,9 @@ export default function DatasetsPage() {
         if (data.database_url) {
           setDbUrl(data.database_url);
           setMaskedUrl(data.masked_url);
-          if (data.active_status === "SQLite Fallback") {
+          if (data.active_status === "Offline") {
             setDbStatus("Disconnected");
-            logDatabase("Warning: PostgreSQL is unreachable. Active connection: SQLite Fallback.");
+            logDatabase("Warning: PostgreSQL database is currently offline or unreachable.");
           } else {
             setDbStatus("Connected");
             logDatabase("Connection string loaded. Active connection: PostgreSQL (NeonDB).");
