@@ -71,8 +71,13 @@ export default function DatasetsPage() {
         if (data.database_url) {
           setDbUrl(data.database_url);
           setMaskedUrl(data.masked_url);
-          setDbStatus("Connected");
-          logDatabase("Connection string loaded. Active connection: PostgreSQL (NeonDB).");
+          if (data.active_status === "SQLite Fallback") {
+            setDbStatus("Disconnected");
+            logDatabase("Warning: PostgreSQL is unreachable. Active connection: SQLite Fallback.");
+          } else {
+            setDbStatus("Connected");
+            logDatabase("Connection string loaded. Active connection: PostgreSQL (NeonDB).");
+          }
         } else {
           setDbStatus("Disconnected");
           logDatabase("SQLite Fallback is active. NeonDB configuration has not been set.");
@@ -105,8 +110,13 @@ export default function DatasetsPage() {
       
       const data = await res.json();
       if (res.ok) {
-        setDbStatus("Connected");
-        logDatabase(`Success: ${data.message}`);
+        if (data.db_initialized) {
+          setDbStatus("Connected");
+          logDatabase(`Success: ${data.message}`);
+        } else {
+          setDbStatus("Disconnected");
+          logDatabase(`Success: ${data.message} Warning: ${data.warning}`);
+        }
         // Fetch new counts
         fetchTableCounts();
       } else {

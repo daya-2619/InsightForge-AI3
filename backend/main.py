@@ -817,10 +817,15 @@ def get_neondb_config():
         else:
             masked_url = "postgresql://****"
             
+    # Trigger get_engine to evaluate connection reachability
+    from database import get_engine, _use_sqlite_fallback
+    get_engine()
+    
     return {
         "database_url": db_url,
         "masked_url": masked_url,
-        "is_configured": bool(db_url and not db_url.startswith("sqlite"))
+        "is_configured": bool(db_url and not db_url.startswith("sqlite")),
+        "active_status": "SQLite Fallback" if _use_sqlite_fallback else ("Connected" if db_url else "SQLite Local Fallback")
     }
 
 @app.get("/api/neondb/tables")
@@ -930,13 +935,30 @@ def save_neondb_config(config: NeonDBConfig):
     from database import reset_db_connection, init_db
     reset_db_connection()
     
+    db_initialized = False
+    warning_msg = None
+    
     try:
-        # Forcefully initialize database tables in the new database URL
+        # Check reachability with a short 2s timeout before running blocking init_db()
+        temp_engine = create_engine(url, connect_args={"connect_timeout": 2})
+        with temp_engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        temp_engine.dispose()
+        
+        # If reachable, initialize tables
         init_db()
-        return {"status": "success", "message": "NeonDB connection string saved and tables initialized successfully."}
+        db_initialized = True
     except Exception as e:
+        warning_msg = f"Database is currently unreachable: {str(e)}"
+        # Clear connections back to safe fallback state
         reset_db_connection()
-        raise HTTPException(status_code=400, detail=f"Saved URL, but failed to connect and initialize tables in the database: {str(e)}")
+        
+    return {
+        "status": "success",
+        "message": "NeonDB connection string saved successfully.",
+        "db_initialized": db_initialized,
+        "warning": warning_msg
+    }
 
 @app.post("/api/neondb/test-connection")
 def test_neondb_connection(req: TestConnectionRequest):

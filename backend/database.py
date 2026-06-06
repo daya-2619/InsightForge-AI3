@@ -5,15 +5,20 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, T
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+import time
+from sqlalchemy import text
+
 # Global cache for dynamic database engine switching
 _engine = None
 _SessionLocal = None
 _current_url = None
+_use_sqlite_fallback = False
+_last_fallback_check = 0
 
 Base = declarative_base()
 
 def reset_db_connection():
-    global _engine, _SessionLocal, _current_url
+    global _engine, _SessionLocal, _current_url, _use_sqlite_fallback, _last_fallback_check
     if _engine is not None:
         try:
             _engine.dispose()
@@ -22,9 +27,11 @@ def reset_db_connection():
     _engine = None
     _SessionLocal = None
     _current_url = None
+    _use_sqlite_fallback = False
+    _last_fallback_check = 0
 
 def get_engine():
-    global _engine, _current_url
+    global _engine, _current_url, _use_sqlite_fallback, _last_fallback_check
     
     # Reload environment to pick up any runtime changes to .env
     from dotenv import load_dotenv
@@ -38,16 +45,34 @@ def get_engine():
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
         
-    # Recreate engine if URL changes
-    if _engine is None or db_url != _current_url:
-        connect_args = {}
-        if db_url.startswith("sqlite"):
-            connect_args = {"check_same_thread": False}
-        elif db_url.startswith("postgresql"):
-            connect_args = {"connect_timeout": 5}
-            
-        _engine = create_engine(db_url, connect_args=connect_args)
+    current_time = time.time()
+    url_changed = _engine is None or db_url != _current_url
+    retry_postgres = _use_sqlite_fallback and (current_time - _last_fallback_check > 30)
+    
+    if url_changed or retry_postgres:
         _current_url = db_url
+        _last_fallback_check = current_time
+        
+        if db_url.startswith("postgresql"):
+            try:
+                # Test connectivity with a short 2s timeout
+                test_engine = create_engine(db_url, connect_args={"connect_timeout": 2})
+                with test_engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                test_engine.dispose()
+                
+                # Connection successful!
+                _engine = create_engine(db_url, connect_args={"connect_timeout": 5})
+                _use_sqlite_fallback = False
+            except Exception as e:
+                print(f"Warning: PostgreSQL database is unreachable. Falling back to SQLite. Error: {str(e)}")
+                fallback_url = "sqlite:///./insightforge.db"
+                _engine = create_engine(fallback_url, connect_args={"check_same_thread": False})
+                _use_sqlite_fallback = True
+        else:
+            # SQLite URL
+            _engine = create_engine(db_url, connect_args={"check_same_thread": False})
+            _use_sqlite_fallback = False
         
     return _engine
 

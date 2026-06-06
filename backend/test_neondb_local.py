@@ -26,7 +26,7 @@ def test_ingestion():
     assert parsed_json[0]["model_id"] == "JSON-MOCK"
     
     print("Testing JSON Ingestion Validation...")
-    validated_json = validate_and_convert_records("execution_logs", parsed_json)
+    validated_json = validate_and_convert_records(db, "execution_logs", parsed_json)
     assert validated_json[0]["cost"] == 0.0012
     
     print("Testing Database Commit...")
@@ -45,8 +45,8 @@ def test_ingestion():
     assert parsed_csv[0]["entity_name"] == "CSV Corp"
     
     print("Testing CSV Ingestion Validation...")
-    validated_csv = validate_and_convert_records("activities", parsed_csv)
-    assert validated_csv[0]["confidence"] == 99
+    validated_csv = validate_and_convert_records(db, "activities", parsed_csv)
+    assert int(validated_csv[0]["confidence"]) == 99
     
     print("Testing Database Commit (CSV)...")
     count_csv = ingest_data(db, "activities", validated_csv, mode="overwrite")
