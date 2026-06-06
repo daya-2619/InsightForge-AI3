@@ -51,7 +51,7 @@ def get_engine():
     
     if url_changed or retry_db:
         _current_url = db_url
-        _last_fallback_check = current_time
+        _last_offline_check = current_time
         
         # Test connectivity with a short 2s timeout
         try:

@@ -297,12 +297,23 @@ export default function DatasetsPage() {
                   ? "bg-green-400/10 border border-green-400/25 text-green-400" 
                   : dbStatus === "Connecting" 
                   ? "bg-amber-400/10 border border-amber-400/25 text-amber-400" 
-                  : "bg-red-400/10 border border-red-400/25 text-red-400"
+                  : dbUrl 
+                  ? "bg-red-400/10 border border-red-400/25 text-red-400" 
+                  : "bg-blue-400/10 border border-blue-400/25 text-blue-400"
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${
-                  dbStatus === "Connected" ? "bg-green-400 animate-pulse" : dbStatus === "Connecting" ? "bg-amber-400 animate-spin" : "bg-red-400"
+                  dbStatus === "Connected" 
+                    ? "bg-green-400 animate-pulse" 
+                    : dbStatus === "Connecting" 
+                    ? "bg-amber-400 animate-spin" 
+                    : dbUrl 
+                    ? "bg-red-400" 
+                    : "bg-blue-400"
                 }`}></span>
-                {dbStatus === "Connected" ? "NeonDB Connected" : dbStatus === "Connecting" ? "Connecting..." : "SQLite Fallback"}
+                {dbUrl 
+                  ? (dbStatus === "Connected" ? "NeonDB Connected" : dbStatus === "Connecting" ? "Connecting..." : "Connection Offline") 
+                  : "SQLite Fallback"
+                }
               </span>
             </div>
 
