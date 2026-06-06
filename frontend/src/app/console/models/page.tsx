@@ -79,15 +79,33 @@ export default function ModelsPage() {
   const [topP, setTopP] = useState(selectedModel.parameters.top_p);
   const [maxTokens, setMaxTokens] = useState(selectedModel.parameters.max_tokens);
 
+  // Fetch dynamic model telemetry from backend
+  const fetchModelTelemetry = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/models/telemetry");
+      if (response.ok) {
+        const data = await response.json();
+        setModels(data);
+        logTelemetry("Successfully synchronized dynamic telemetry database with active model nodes.");
+      }
+    } catch (err) {
+      console.warn("Failed to synchronize model telemetry, utilizing baseline fallbacks.");
+    }
+  };
+
+  useEffect(() => {
+    fetchModelTelemetry();
+  }, []);
+
   // Sync state values when selected model changes
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setTemperature(selectedModel.parameters.temperature);
-      setTopP(selectedModel.parameters.top_p);
-      setMaxTokens(selectedModel.parameters.max_tokens);
+      setTemperature(selectedModel?.parameters?.temperature ?? 0.7);
+      setTopP(selectedModel?.parameters?.top_p ?? 0.9);
+      setMaxTokens(selectedModel?.parameters?.max_tokens ?? 2048);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [selectedId, selectedModel.parameters.max_tokens, selectedModel.parameters.temperature, selectedModel.parameters.top_p]);
+  }, [selectedId, selectedModel?.parameters?.max_tokens, selectedModel?.parameters?.temperature, selectedModel?.parameters?.top_p]);
 
   // Telemetry log list state
   const [simulatedLogs, setSimulatedLogs] = useState<string[]>([]);

@@ -25,6 +25,7 @@ export default function AnalyticsPage() {
   
   // Execution logs state
   const [logs, setLogs] = useState<ExecutionLog[]>([]);
+  const [models, setModels] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [loadingLogs, setLoadingLogs] = useState(true);
@@ -79,6 +80,44 @@ export default function AnalyticsPage() {
     }
   };
 
+  const fetchModels = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/models/telemetry");
+      if (response.ok) {
+        const data = await response.json();
+        setModels(data);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch model telemetry in analytics page");
+    }
+  };
+
+  const getVelocityChartData = () => {
+    const latestLogs = [...logs].slice(0, 12).reverse();
+    const latencies = latestLogs.map(log => {
+      if (log.status === "Failed" || !log.latency || log.latency === "--") {
+        return 0;
+      }
+      const num = parseInt(log.latency.replace("ms", ""));
+      return isNaN(num) ? 0 : num;
+    });
+
+    const defaultVals = [122, 145, 388, 412, 512, 789, 842, 130, 122, 145, 512, 842];
+    while (latencies.length < 12) {
+      latencies.unshift(defaultVals[12 - latencies.length - 1] || 100);
+    }
+    
+    const maxVal = Math.max(...latencies, 100);
+    return latencies.map(val => ({
+      val,
+      height: Math.max(5, Math.round((val / maxVal) * 90))
+    }));
+  };
+
+  useEffect(() => {
+    fetchModels();
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(() => fetchLogs(searchQuery, statusFilter), 0);
     return () => window.clearTimeout(timer);
@@ -130,6 +169,11 @@ export default function AnalyticsPage() {
       });
     }
   };
+
+  const baselineModel = models.find(m => m.id === "gpt-4o-v2") || { name: "IF-GPT-4o-V2", accuracy: 88.2, latency: 122 };
+  const tunedModel = models.find(m => m.id === "llama3-70b") || { name: "IF-LLAMA3-70B", accuracy: 94.7, latency: 842 };
+  const accuracyDiff = (tunedModel.accuracy - baselineModel.accuracy).toFixed(1);
+  const diffSign = parseFloat(accuracyDiff) >= 0 ? "+" : "";
 
   return (
     <div className="space-y-lg flex-1 relative flex flex-col min-h-0 min-w-0">
@@ -192,14 +236,14 @@ export default function AnalyticsPage() {
                 </div>
 
                 <div className="flex-1 flex items-end gap-2 px-2 h-44">
-                  {[40, 55, 45, 75, 60, 50, 40, 65, 90, 55, 45, 35].map((val, idx) => (
+                  {getVelocityChartData().map((item, idx) => (
                     <div 
                       key={idx}
-                      style={{ height: `${val}%` }}
+                      style={{ height: `${item.height}%` }}
                       className="flex-1 bg-primary/25 border-t border-primary/40 hover:bg-primary/50 hover:scale-[1.04] transition-all rounded-t-md relative group cursor-pointer"
                     >
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container border border-white/10 px-2 py-0.5 rounded text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                        {val * 4}ms
+                        {item.val > 0 ? `${item.val}ms` : "Failed"}
                       </div>
                     </div>
                   ))}
@@ -266,17 +310,17 @@ export default function AnalyticsPage() {
             <div className="glass-panel rounded-2xl overflow-hidden flex flex-col md:flex-row h-auto md:h-80 items-stretch">
               
               {/* Baseline standard */}
-          <div className="min-w-0 flex-1 p-md md:p-lg flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
-              <div className="flex min-w-0 justify-between items-start gap-md">
+              <div className="min-w-0 flex-1 p-md md:p-lg flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
+                <div className="flex min-w-0 justify-between items-start gap-md">
                   <div>
                     <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[9px] font-bold rounded uppercase tracking-wider mb-1.5 inline-block">
                       Baseline Core
                     </span>
-                    <h4 className="text-lg font-bold text-on-surface leading-none">IF-GPT-4o-V2</h4>
+                    <h4 className="text-lg font-bold text-on-surface leading-none">{baselineModel.name}</h4>
                     <p className="text-[10px] text-outline mt-1 font-semibold">Standard enterprise general logic</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-extrabold text-on-surface">88.2%</div>
+                    <div className="text-2xl font-extrabold text-on-surface">{baselineModel.accuracy}%</div>
                     <div className="text-[8px] text-outline font-bold uppercase tracking-widest mt-0.5">Accuracy Index</div>
                   </div>
                 </div>
@@ -297,7 +341,7 @@ export default function AnalyticsPage() {
                   <div className="flex items-center gap-md text-label-sm font-semibold">
                     <span className="text-outline w-10 text-right">IOPS</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
-                      <div className="h-full bg-outline w-[30%]"></div>
+                      <div className="h-full bg-outline" style={{ width: `${Math.max(10, 100 - Math.min(90, Math.round(baselineModel.latency / 10)))}%` }}></div>
                     </div>
                   </div>
                 </div>
@@ -315,12 +359,12 @@ export default function AnalyticsPage() {
                     <span className="px-2 py-0.5 bg-secondary/10 border border-secondary/20 text-secondary text-[9px] font-bold rounded uppercase tracking-wider mb-1.5 inline-block">
                       Specialized Tuning
                     </span>
-                    <h4 className="text-lg font-bold text-on-surface leading-none">IF-LLAMA3-70B</h4>
+                    <h4 className="text-lg font-bold text-on-surface leading-none">{tunedModel.name}</h4>
                     <p className="text-[10px] text-outline mt-1 font-semibold">Fine-tuned with custom domain signals</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-extrabold text-secondary">94.7%</div>
-                    <div className="text-[8px] text-secondary/60 font-bold uppercase tracking-widest mt-0.5">Accuracy (+6.5%)</div>
+                    <div className="text-2xl font-extrabold text-secondary">{tunedModel.accuracy}%</div>
+                    <div className="text-[8px] text-secondary/60 font-bold uppercase tracking-widest mt-0.5">Accuracy ({diffSign}{accuracyDiff}%)</div>
                   </div>
                 </div>
 
@@ -340,7 +384,7 @@ export default function AnalyticsPage() {
                   <div className="flex items-center gap-md text-label-sm font-semibold">
                     <span className="text-outline w-10 text-right">IOPS</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
-                      <div className="h-full bg-secondary w-[85%] shadow-[0_0_8px_rgba(210,187,255,0.4)]"></div>
+                      <div className="h-full bg-secondary shadow-[0_0_8px_rgba(210,187,255,0.4)]" style={{ width: `${Math.max(10, 100 - Math.min(90, Math.round(tunedModel.latency / 10)))}%` }}></div>
                     </div>
                   </div>
                 </div>

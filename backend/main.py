@@ -389,6 +389,122 @@ def get_logs(
         for log in logs
     ]
 
+@app.get("/api/models/telemetry")
+def get_models_telemetry(db: Session = Depends(get_db)):
+    logs = db.query(ExecutionLog).all()
+    
+    models_def = {
+        "IF-GPT-4o-V2": {
+            "id": "gpt-4o-v2",
+            "name": "IF-GPT-4o-V2",
+            "type": "General Intelligence & Reasoning",
+            "status": "Active",
+            "base_latency": 122,
+            "base_cost": 0.0021,
+            "base_accuracy": 88.2,
+            "description": "Standard enterprise general intelligence. Optimized for low latency and high accuracy across analytical tasks.",
+            "icon": "rocket_launch",
+            "parameters": { "temperature": 0.7, "top_p": 0.9, "max_tokens": 2048 }
+        },
+        "IF-LLAMA3-70B": {
+            "id": "llama3-70b",
+            "name": "IF-LLAMA3-70B",
+            "type": "Advanced Logical Inference",
+            "status": "Standby",
+            "base_latency": 842,
+            "base_cost": 0.0054,
+            "base_accuracy": 94.7,
+            "description": "Superior logical and domain reasoning. Best suited for high-density SQL query formulation and deep diagnostics.",
+            "icon": "psychology",
+            "parameters": { "temperature": 0.2, "top_p": 0.85, "max_tokens": 1024 }
+        },
+        "IF-CLAUDE3.5-SONNET": {
+            "id": "claude-3.5",
+            "name": "IF-CLAUDE3.5-SONNET",
+            "type": "Contextual Synthesizer",
+            "status": "Active",
+            "base_latency": 412,
+            "base_cost": 0.0084,
+            "base_accuracy": 92.8,
+            "description": "Deep multi-stage conversational parsing. Outstanding context window and stateful retention capabilities.",
+            "icon": "auto_awesome",
+            "parameters": { "temperature": 0.5, "top_p": 0.95, "max_tokens": 4096 }
+        },
+        "IF-MIXTRAL-8x7B": {
+            "id": "mixtral-8x7b",
+            "name": "IF-MIXTRAL-8x7B",
+            "type": "Lightweight MoE Router",
+            "status": "Active",
+            "base_latency": 512,
+            "base_cost": 0.0008,
+            "base_accuracy": 86.5,
+            "description": "Sparse mixture of experts model. Extremely cost-effective routing and fast general classification logic.",
+            "icon": "hub",
+            "parameters": { "temperature": 0.8, "top_p": 0.9, "max_tokens": 1536 }
+        }
+    }
+    
+    model_stats = {}
+    for m_id in models_def:
+        model_stats[m_id] = {
+            "latencies": [],
+            "costs": [],
+            "total_runs": 0,
+            "success_runs": 0
+        }
+        
+    for log in logs:
+        m_id = log.model_id
+        if m_id in model_stats:
+            model_stats[m_id]["total_runs"] += 1
+            if log.status == "Success":
+                model_stats[m_id]["success_runs"] += 1
+                if log.latency and log.latency.endswith("ms"):
+                    try:
+                        lat_val = int(log.latency.replace("ms", ""))
+                        model_stats[m_id]["latencies"].append(lat_val)
+                    except ValueError:
+                        pass
+                if log.cost > 0:
+                    model_stats[m_id]["costs"].append(log.cost)
+                    
+    results = []
+    for m_id, m_def in models_def.items():
+        stats = model_stats[m_id]
+        
+        if stats["latencies"]:
+            avg_latency = int(sum(stats["latencies"]) / len(stats["latencies"]))
+        else:
+            avg_latency = m_def["base_latency"]
+            
+        if stats["costs"]:
+            avg_cost = sum(stats["costs"]) / len(stats["costs"])
+        else:
+            avg_cost = m_def["base_cost"]
+            
+        if stats["total_runs"] > 0:
+            success_rate = stats["success_runs"] / stats["total_runs"]
+            dyn_accuracy = m_def["base_accuracy"] * (0.85 + 0.15 * success_rate)
+        else:
+            dyn_accuracy = m_def["base_accuracy"]
+            
+        results.append({
+            "id": m_def["id"],
+            "name": m_def["name"],
+            "type": m_def["type"],
+            "status": m_def["status"],
+            "latency": avg_latency,
+            "cost": round(avg_cost, 5),
+            "accuracy": round(dyn_accuracy, 1),
+            "description": m_def["description"],
+            "icon": m_def["icon"],
+            "parameters": m_def["parameters"],
+            "total_runs": stats["total_runs"],
+            "success_runs": stats["success_runs"]
+        })
+        
+    return results
+
 @app.post("/api/diagnose")
 def initiate_diagnose(db: Session = Depends(get_db)):
     # Simulated root cause diagnosis sequence
