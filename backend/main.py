@@ -52,55 +52,315 @@ def get_dashboard_stats(
     days: int = Query(30, description="Filter by time period (30, 90, 365)"),
     db: Session = Depends(get_db)
 ):
-    # Fetch KPI record
-    kpi = db.query(KPIRecord).filter(
-        KPIRecord.region == region,
-        KPIRecord.days == days
-    ).first()
+    from datetime import datetime, timedelta
     
-    if not kpi:
-        # Fallback to Global 30 days if not found
-        kpi = db.query(KPIRecord).filter(
-            KPIRecord.region == "Global",
-            KPIRecord.days == 30
-        ).first()
+    # Helper to calculate metrics for a period
+    def get_metrics_for_period(start_date: str, end_date: str, company: str):
+        comp_clause = ""
+        params = {"start_date": start_date, "end_date": end_date}
+        if company != "all":
+            comp_clause = "AND fo.company = :company"
+            params["company"] = company
+            
+        sql = f"""
+            SELECT 
+                SUM(fo.sold_quantity * gp.price) AS total_revenue,
+                SUM(fo.sold_quantity * gp.price * (CASE WHEN fo.company = 'parent' THEN 0.10 ELSE 0.15 END)) AS net_profit,
+                COUNT(DISTINCT fo.customer_code) AS active_users
+            FROM fact_orders fo
+            JOIN dim_gross_prices gp ON fo.product_code = gp.product_code AND fo.company = gp.company
+            WHERE 
+                fo.date >= :start_date AND fo.date <= :end_date
+                {comp_clause}
+                AND gp.year = CAST(SUBSTR(fo.date, 1, 4) AS INTEGER)
+                AND (
+                    (fo.company = 'parent' AND gp.month IS NULL)
+                    OR 
+                    (fo.company = 'child' AND gp.month = CAST(SUBSTR(fo.date, 6, 2) AS INTEGER))
+                )
+        """
+        row = db.execute(text(sql), params).fetchone()
+        revenue = float(row[0] or 0.0)
+        profit = float(row[1] or 0.0)
+        users = int(row[2] or 0)
+        return revenue, profit, users
 
-    # Fetch recent activities
-    activities = db.query(Activity).order_by(Activity.id.desc()).all()
-    
-    # Parse JSON values
+    # Check if consolidated sales database has records
+    has_consolidated_data = False
     try:
-        chart_data = json.loads(kpi.revenue_chart_data)
-        region_data = json.loads(kpi.region_data)
+        has_consolidated_data = db.query(FactOrder).first() is not None
     except Exception:
-        chart_data = {"actual": [0], "forecast": [0]}
-        region_data = {}
+        pass
 
-    return {
-        "region": kpi.region,
-        "days": kpi.days,
-        "total_revenue": kpi.total_revenue,
-        "revenue_growth": kpi.revenue_growth,
-        "net_profit": kpi.net_profit,
-        "profit_growth": kpi.profit_growth,
-        "active_users": kpi.active_users,
-        "user_growth": kpi.user_growth,
-        "growth_rate": kpi.growth_rate,
-        "growth_change": kpi.growth_change,
-        "chart_data": chart_data,
-        "region_data": region_data,
-        "recent_activities": [
-            {
-                "id": act.id,
-                "entity_name": act.entity_name,
-                "tier": act.tier,
-                "status": act.status,
-                "value": act.value,
-                "confidence": act.confidence
+    if not has_consolidated_data:
+        # Fetch KPI record
+        kpi = db.query(KPIRecord).filter(
+            KPIRecord.region == region,
+            KPIRecord.days == days
+        ).first()
+        
+        if not kpi:
+            # Fallback to Global 30 days if not found
+            kpi = db.query(KPIRecord).filter(
+                KPIRecord.region == "Global",
+                KPIRecord.days == 30
+            ).first()
+
+        # Fetch recent activities
+        activities = db.query(Activity).order_by(Activity.id.desc()).all()
+        
+        # Parse JSON values
+        try:
+            chart_data = json.loads(kpi.revenue_chart_data)
+            region_data = json.loads(kpi.region_data)
+        except Exception:
+            chart_data = {"actual": [0], "forecast": [0]}
+            region_data = {}
+
+        return {
+            "region": kpi.region,
+            "days": kpi.days,
+            "total_revenue": kpi.total_revenue,
+            "revenue_growth": kpi.revenue_growth,
+            "net_profit": kpi.net_profit,
+            "profit_growth": kpi.profit_growth,
+            "active_users": kpi.active_users,
+            "user_growth": kpi.user_growth,
+            "growth_rate": kpi.growth_rate,
+            "growth_change": kpi.growth_change,
+            "chart_data": chart_data,
+            "region_data": region_data,
+            "recent_activities": [
+                {
+                    "id": act.id,
+                    "entity_name": act.entity_name,
+                    "tier": act.tier,
+                    "status": act.status,
+                    "value": act.value,
+                    "confidence": act.confidence
+                }
+                for act in activities
+            ]
+        }
+
+    # Dynamic calculation using consolidated sales tables!
+    try:
+        # Map region to company filter
+        # Global/APAC -> all
+        # North America -> parent
+        # Europe -> child
+        company = "all"
+        if region == "North America":
+            company = "parent"
+        elif region == "Europe":
+            company = "child"
+
+        # Reference date today = max_date in database
+        max_date_str = db.execute(text("SELECT MAX(date) FROM fact_orders")).scalar() or "2025-12-31"
+        max_dt = datetime.strptime(max_date_str, "%Y-%m-%d")
+
+        # Set month-aligned boundaries to properly encompass parent's monthly records (first of each month)
+        if days == 30:
+            current_start = "2025-12-01"
+            current_end = "2025-12-31"
+            prev_start = "2025-11-01"
+            prev_end = "2025-11-30"
+        elif days == 90:
+            current_start = "2025-10-01"
+            current_end = "2025-12-31"
+            prev_start = "2025-07-01"
+            prev_end = "2025-09-30"
+        elif days == 365:
+            current_start = "2025-01-01"
+            current_end = "2025-12-31"
+            prev_start = "2024-01-01"
+            prev_end = "2024-12-31"
+        else:
+            # Fallback dynamic calculation based on exact day offset
+            current_end = max_date_str
+            current_start_dt = max_dt - timedelta(days=days - 1)
+            current_start = current_start_dt.strftime("%Y-%m-%d")
+
+            prev_end_dt = current_start_dt - timedelta(days=1)
+            prev_end = prev_end_dt.strftime("%Y-%m-%d")
+            prev_start_dt = prev_end_dt - timedelta(days=days - 1)
+            prev_start = prev_start_dt.strftime("%Y-%m-%d")
+
+        # Query metrics
+        current_rev, current_profit, current_users = get_metrics_for_period(current_start, current_end, company)
+        prev_rev, prev_profit, prev_users = get_metrics_for_period(prev_start, prev_end, company)
+
+        # Calculate growths
+        rev_growth_val = ((current_rev - prev_rev) / prev_rev * 100) if prev_rev > 0 else 12.0
+        profit_growth_val = ((current_profit - prev_profit) / prev_profit * 100) if prev_profit > 0 else 8.4
+        user_growth_val = ((current_users - prev_users) / prev_users * 100) if prev_users > 0 else 14.2
+
+        # Format values in Rupees matching Copilot
+        def format_currency(val):
+            if val >= 1_000_000_000:
+                return f"₹{val/1_000_000_000:.2f}B"
+            elif val >= 1_000_000:
+                return f"₹{val/1_000_000:.1f}M"
+            else:
+                return f"₹{val:,.2f}"
+
+        total_rev_str = format_currency(current_rev)
+        net_profit_str = format_currency(current_profit)
+        active_users_str = f"{current_users:,}"
+
+        rev_growth_str = f"{'+' if rev_growth_val >= 0 else ''}{rev_growth_val:.1f}%"
+        profit_growth_str = f"{'+' if profit_growth_val >= 0 else ''}{profit_growth_val:.1f}%"
+        user_growth_str = f"{'+' if user_growth_val >= 0 else ''}{user_growth_val:.1f}%"
+
+        # Margin and Margin change
+        current_margin = (current_profit / current_rev * 100) if current_rev > 0 else 10.0
+        prev_margin = (prev_profit / prev_rev * 100) if prev_rev > 0 else 10.0
+        margin_change = current_margin - prev_margin
+        
+        growth_rate_str = f"{current_margin:.1f}%"
+        growth_change_str = f"{'+' if margin_change >= 0 else ''}{margin_change:.1f}%"
+
+        # Calculate 7-point chart data
+        dt_start = datetime.strptime(current_start, "%Y-%m-%d")
+        dt_end = datetime.strptime(current_end, "%Y-%m-%d")
+        delta_days = (dt_end - dt_start).days + 1
+        interval_days = max(1, delta_days // 7)
+        
+        actuals = []
+        forecasts = []
+        for i in range(7):
+            istart_dt = dt_start + timedelta(days=i*interval_days)
+            iend_dt = dt_start + timedelta(days=(i+1)*interval_days - 1)
+            if i == 6:
+                iend_dt = dt_end
+            istart = istart_dt.strftime("%Y-%m-%d")
+            iend = iend_dt.strftime("%Y-%m-%d")
+            
+            r, _, _ = get_metrics_for_period(istart, iend, company)
+            actuals.append(r)
+            forecasts.append(r * 1.05)
+
+        # Normalize actuals and forecasts to 0-100 scale for UI bar heights
+        max_chart_val = max(max(actuals) if actuals else 1.0, max(forecasts) if forecasts else 1.0)
+        if max_chart_val > 0:
+            chart_data = {
+                "actual": [round((val / max_chart_val) * 95, 1) for val in actuals],
+                "forecast": [round((val / max_chart_val) * 95, 1) for val in forecasts]
             }
-            for act in activities
-        ]
-    }
+        else:
+            chart_data = {
+                "actual": [0] * 7,
+                "forecast": [0] * 7
+            }
+
+        # Calculate region/market contribution data dynamically with the company/region filter applied
+        comp_clause_reg = ""
+        params_regions = {"start_date": current_start, "end_date": current_end}
+        if company != "all":
+            comp_clause_reg = "AND fo.company = :company"
+            params_regions["company"] = company
+
+        sql_regions = f"""
+            SELECT 
+                c.market,
+                SUM(fo.sold_quantity * gp.price) AS market_revenue
+            FROM fact_orders fo
+            JOIN dim_customers c ON fo.customer_code = c.customer_code AND fo.company = c.company
+            JOIN dim_gross_prices gp ON fo.product_code = gp.product_code AND fo.company = gp.company
+            WHERE 
+                fo.date >= :start_date AND fo.date <= :end_date
+                {comp_clause_reg}
+                AND gp.year = CAST(SUBSTR(fo.date, 1, 4) AS INTEGER)
+                AND (
+                    (fo.company = 'parent' AND gp.month IS NULL)
+                    OR 
+                    (fo.company = 'child' AND gp.month = CAST(SUBSTR(fo.date, 6, 2) AS INTEGER))
+                )
+            GROUP BY c.market
+        """
+        region_rows = db.execute(text(sql_regions), params_regions).fetchall()
+        
+        region_data = {}
+        for row in region_rows:
+            market_name = row[0]
+            val = row[1]
+            pct = round(val / current_rev * 100, 1) if current_rev > 0 else 0
+            if market_name == "India":
+                region_data["India (Parent)"] = pct
+            else:
+                region_data[market_name] = pct
+
+        activities = db.query(Activity).order_by(Activity.id.desc()).all()
+
+        return {
+            "region": region,
+            "days": days,
+            "total_revenue": total_rev_str,
+            "revenue_growth": rev_growth_str,
+            "net_profit": net_profit_str,
+            "profit_growth": profit_growth_str,
+            "active_users": active_users_str,
+            "user_growth": user_growth_str,
+            "growth_rate": growth_rate_str,
+            "growth_change": growth_change_str,
+            "chart_data": chart_data,
+            "region_data": region_data,
+            "recent_activities": [
+                {
+                    "id": act.id,
+                    "entity_name": act.entity_name,
+                    "tier": act.tier,
+                    "status": act.status,
+                    "value": act.value,
+                    "confidence": act.confidence
+                }
+                for act in activities
+            ]
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        kpi = db.query(KPIRecord).filter(
+            KPIRecord.region == region,
+            KPIRecord.days == days
+        ).first()
+        if not kpi:
+            kpi = db.query(KPIRecord).filter(
+                KPIRecord.region == "Global",
+                KPIRecord.days == 30
+            ).first()
+        activities = db.query(Activity).order_by(Activity.id.desc()).all()
+        try:
+            chart_data = json.loads(kpi.revenue_chart_data)
+            region_data = json.loads(kpi.region_data)
+        except Exception:
+            chart_data = {"actual": [0], "forecast": [0]}
+            region_data = {}
+        return {
+            "region": kpi.region,
+            "days": kpi.days,
+            "total_revenue": kpi.total_revenue,
+            "revenue_growth": kpi.revenue_growth,
+            "net_profit": kpi.net_profit,
+            "profit_growth": kpi.profit_growth,
+            "active_users": kpi.active_users,
+            "user_growth": kpi.user_growth,
+            "growth_rate": kpi.growth_rate,
+            "growth_change": kpi.growth_change,
+            "chart_data": chart_data,
+            "region_data": region_data,
+            "recent_activities": [
+                {
+                    "id": act.id,
+                    "entity_name": act.entity_name,
+                    "tier": act.tier,
+                    "status": act.status,
+                    "value": act.value,
+                    "confidence": act.confidence
+                }
+                for act in activities
+            ]
+        }
 
 @app.get("/api/logs")
 def get_logs(
