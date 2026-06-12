@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+import { Menu, X, Search, Bell, Settings, Sparkles, Send, Activity, CheckCircle2, MessageSquare, ArrowRight, LayoutGrid, Database, Cloud, Network, Terminal, Check, Globe, Mail, Loader2, LogIn, Zap, Power, Rocket, Star, ChevronRight, ShieldCheck, RefreshCw, Server, AlertTriangle, ArrowLeftRight, HelpCircle, HardDrive, Cpu, Compass, GitBranch, Layers } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -24,18 +26,9 @@ export default function LandingPage() {
   const [demoSubmitted, setDemoSubmitted] = useState(false);
 
   // Stateful authentication gate hooks
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
   const [redirectPath, setRedirectPath] = useState("/console/dashboard");
-
-  // Read active session state on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const auth = sessionStorage.getItem("is_authenticated");
-      if (auth === "true") {
-        setIsAuthenticated(true);
-      }
-    }
-  }, []);
 
   // Intercept all secure dashboard transitions
   const handleConsoleNavigate = (e: React.MouseEvent<HTMLElement> | null, path: string, mode: "login" | "demo" = "login") => {
@@ -64,14 +57,17 @@ export default function LandingPage() {
     setAuthError("");
 
     // Simulate sending demo request
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsLoading(false);
       setDemoSubmitted(true);
       
       // Auto redirect to dashboard after showing success animation
-      setTimeout(() => {
-        sessionStorage.setItem("is_authenticated", "true");
-        setIsAuthenticated(true);
+      setTimeout(async () => {
+        await signIn("credentials", {
+          redirect: false,
+          email: "admin@sturvixa.ai",
+          password: "admin",
+        });
         setShowLoginModal(false);
         setDemoSubmitted(false);
         router.push(redirectPath);
@@ -253,7 +249,7 @@ export default function LandingPage() {
   }, []);
 
   // Handles Mock Sign In
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setAuthError("Email and password are required.");
@@ -263,14 +259,20 @@ export default function LandingPage() {
     setIsLoading(true);
     setAuthError("");
 
-    // Simulate authenticating
-    setTimeout(() => {
-      setIsLoading(false);
-      sessionStorage.setItem("is_authenticated", "true");
-      setIsAuthenticated(true);
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (res?.error) {
+      setAuthError("Invalid credentials.");
+    } else {
       setShowLoginModal(false);
       router.push(redirectPath);
-    }, 1200);
+    }
   };
 
   return (
@@ -280,20 +282,20 @@ export default function LandingPage() {
       <div className="crystalline absolute inset-0 z-10 pointer-events-none opacity-[0.02]"></div>
 
       {/* Top Header Navigation matching high fidelity dashboard mockup */}
-      <header className="bg-surface/60 backdrop-blur-xl border-b border-white/10 flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 sticky top-0 z-50">
-        <div className="flex min-w-0 items-center gap-md">
+      <header className="bg-surface/60 backdrop-blur-xl border-b border-white/10 flex justify-between items-center w-full px-4 md:px-8 h-16 sticky top-0 z-50">
+        <div className="flex min-w-0 items-center gap-6">
           {/* Hamburger button for mobile landing page */}
           <button
             onClick={() => setMobileMenuOpen(true)}
             className="md:hidden p-2 -ml-2 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center justify-center cursor-pointer"
             title="Open Navigation"
           >
-            <span className="material-symbols-outlined text-headline-md">menu</span>
+            <Menu className="w-5 h-5 text-xl md:text-2xl font-bold tracking-tight" />
           </button>
 
           <Link 
             href="/"
-            className="min-w-0 flex items-center gap-2 text-xl sm:text-headline-md font-headline-md font-bold text-primary tracking-normal cursor-pointer whitespace-nowrap"
+            className="min-w-0 flex items-center gap-2 text-xl sm:text-xl md:text-2xl font-bold tracking-tight font-headline-md font-bold text-primary tracking-normal cursor-pointer whitespace-nowrap"
           >
             <svg className="w-8 h-8 shrink-0" viewBox="110 70 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -316,22 +318,22 @@ export default function LandingPage() {
           </Link>
         </div>
         
-        <nav className="hidden md:flex items-center gap-md">
-          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-label-md font-label-md cursor-pointer">Dashboard</Link>
-          <Link href="/console/analytics" onClick={(e) => handleConsoleNavigate(e, "/console/analytics")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-label-md font-label-md cursor-pointer">Analytics</Link>
-          <Link href="/console/models" onClick={(e) => handleConsoleNavigate(e, "/console/models")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-label-md font-label-md cursor-pointer">Models</Link>
-          <Link href="/console/datasets" onClick={(e) => handleConsoleNavigate(e, "/console/datasets")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-label-md font-label-md cursor-pointer">Datasets</Link>
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-xs md:text-sm font-medium font-label-md cursor-pointer">Dashboard</Link>
+          <Link href="/console/analytics" onClick={(e) => handleConsoleNavigate(e, "/console/analytics")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-xs md:text-sm font-medium font-label-md cursor-pointer">Analytics</Link>
+          <Link href="/console/models" onClick={(e) => handleConsoleNavigate(e, "/console/models")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-xs md:text-sm font-medium font-label-md cursor-pointer">Models</Link>
+          <Link href="/console/datasets" onClick={(e) => handleConsoleNavigate(e, "/console/datasets")} className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 text-xs md:text-sm font-medium font-label-md cursor-pointer">Datasets</Link>
         </nav>
         
-        <div className="flex shrink-0 items-center gap-base">
-          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
-            <span className="material-symbols-outlined">search</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
+            <Search  />
           </Link>
-          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
-            <span className="material-symbols-outlined">notifications</span>
+          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
+            <Bell  />
           </Link>
-          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
-            <span className="material-symbols-outlined">settings</span>
+          <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center">
+            <Settings  />
           </Link>
           <Link href="/console/dashboard" onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")} className="flex items-center ml-base">
             <img 
@@ -347,7 +349,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section 
           ref={heroSectionRef} 
-          className="relative min-h-[760px] lg:min-h-[900px] flex flex-col items-center justify-center pt-xl pb-lg px-margin-mobile md:px-margin-desktop overflow-hidden" 
+          className="relative min-h-[760px] lg:min-h-[900px] flex flex-col items-center justify-center pt-20 md:pt-24 pb-12 md:pb-16 px-4 md:px-8 overflow-hidden" 
           id="hero"
         >
           {/* Shifting radial color backdrops */}
@@ -357,21 +359,21 @@ export default function LandingPage() {
           
           <div className="z-10 text-center w-full max-w-4xl mx-auto space-y-md relative reveal active">
             {/* Pill Container */}
-            <div className="inline-flex items-center gap-xs px-base py-1 bg-surface-container-high border border-white/10 rounded-full mb-base">
-              <span className="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
-                <span className="material-symbols-outlined text-[15px] text-primary">verified_user</span>
+            <div className="inline-flex items-center gap-2 px-base py-1 bg-surface-container-high border border-white/10 rounded-full mb-2">
+              <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                <ShieldCheck className="w-5 h-5 text-[15px] text-primary" />
                 <span className="tracking-widest">v4.0 Enterprise Intelligence Now Live</span>
                 <span className="text-primary font-bold">&gt;</span>
               </span>
             </div>
             
             {/* Bold Headline */}
-            <h1 className="text-headline-xl font-headline-xl text-on-surface max-w-3xl mx-auto leading-tight text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight md:leading-none font-headline-xl text-on-surface max-w-3xl mx-auto leading-tight text-balance">
               Ask Your Data <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">Anything</span>
             </h1>
             
             {/* Subtitle */}
-            <p className="text-body-lg font-body-lg text-outline w-full max-w-2xl mx-auto leading-relaxed text-pretty">
+            <p className="text-base md:text-lg text-zinc-400 font-normal font-body-lg text-outline w-full max-w-2xl mx-auto leading-relaxed text-pretty">
               The first enterprise-grade generative AI platform that turns complex datasets into actionable executive insights with human-level reasoning.
             </p>
             
@@ -397,13 +399,13 @@ export default function LandingPage() {
           <Link 
             href="/console/dashboard"
             onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")}
-            className="block relative mt-xl w-full max-w-6xl mx-auto glass-panel rounded-2xl p-xs md:p-base shadow-2xl float-anim cursor-pointer hover:border-primary/30 transition-all duration-300 z-20 reveal active overflow-hidden"
+            className="block relative mt-xl w-full max-w-6xl mx-auto glass-panel rounded-2xl p-2 md:p-base shadow-2xl float-anim cursor-pointer hover:border-primary/30 transition-all duration-300 z-20 reveal active overflow-hidden"
           >
             <div className="crystalline absolute inset-0 rounded-2xl"></div>
             <div className="bg-surface-container-lowest rounded-xl overflow-hidden border border-white/5 flex flex-col lg:flex-row aspect-auto min-h-[420px] lg:aspect-[21/9]">
               
               {/* Sidebar Mockup */}
-              <div className="hidden md:flex w-16 border-r border-white/5 flex-col items-center py-md space-y-md">
+              <div className="hidden md:flex w-16 border-r border-white/5 flex-col items-center py-6 space-y-md">
                 <div className="w-8 h-8 bg-primary/30 border border-primary/50 rounded-lg flex items-center justify-center">
                   <div className="w-4 h-4 bg-primary rounded-sm"></div>
                 </div>
@@ -413,9 +415,9 @@ export default function LandingPage() {
               </div>
               
               {/* Center Dashboard View */}
-              <div className="min-w-0 flex-1 p-md space-y-md overflow-hidden flex flex-col justify-between">
+              <div className="min-w-0 flex-1 p-6 space-y-md overflow-hidden flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center mb-md">
+                  <div className="flex justify-between items-center mb-6">
                     <div className="h-6 w-48 bg-surface-variant/30 rounded-full flex items-center px-3">
                       <div className="h-1.5 w-24 bg-outline/25 rounded-full"></div>
                     </div>
@@ -423,8 +425,8 @@ export default function LandingPage() {
                   </div>
                   
                   {/* KPI Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-sm sm:gap-md">
-                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-sm flex flex-col justify-between">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
                       <div className="space-y-xs">
                         <div className="h-3 w-12 bg-surface-variant/40 rounded"></div>
                         <div className="h-2 w-8 bg-outline/20 rounded"></div>
@@ -433,7 +435,7 @@ export default function LandingPage() {
                         <div className="h-2 w-16 bg-primary/60 rounded-full"></div>
                       </div>
                     </div>
-                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-sm flex flex-col justify-between">
+                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
                       <div className="space-y-xs">
                         <div className="h-3 w-12 bg-surface-variant/40 rounded"></div>
                         <div className="h-2 w-8 bg-outline/20 rounded"></div>
@@ -442,7 +444,7 @@ export default function LandingPage() {
                         <div className="h-2 w-16 bg-secondary/60 rounded-full"></div>
                       </div>
                     </div>
-                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-sm flex flex-col justify-between">
+                    <div className="h-32 bg-surface-container/50 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
                       <div className="space-y-xs">
                         <div className="h-3 w-12 bg-surface-variant/40 rounded"></div>
                         <div className="h-2 w-8 bg-outline/20 rounded"></div>
@@ -455,10 +457,10 @@ export default function LandingPage() {
                 </div>
                 
                 {/* SVG Visual Line Chart */}
-                <div className="h-44 bg-surface-container/40 rounded-xl border border-white/5 relative overflow-hidden flex flex-col justify-between p-sm">
+                <div className="h-44 bg-surface-container/40 rounded-xl border border-white/5 relative overflow-hidden flex flex-col justify-between p-4">
                   <div className="flex justify-between items-center">
                     <div className="h-3 w-28 bg-surface-variant/30 rounded"></div>
-                    <div className="flex gap-xs">
+                    <div className="flex gap-2">
                       <div className="h-2 w-6 bg-primary/30 rounded-full"></div>
                       <div className="h-2 w-6 bg-secondary/30 rounded-full"></div>
                     </div>
@@ -502,24 +504,24 @@ export default function LandingPage() {
               </div>
               
               {/* Right Side AI Copilot */}
-              <div className="hidden lg:flex lg:w-80 lg:border-l border-t lg:border-t-0 border-white/5 bg-surface-container-low/40 p-md flex-col justify-between">
+              <div className="hidden lg:flex lg:w-80 lg:border-l border-t lg:border-t-0 border-white/5 bg-surface-container-low/40 p-6 flex-col justify-between">
                 <div>
-                  <div className="text-label-sm font-label-sm text-primary mb-md flex items-center gap-xs font-bold tracking-widest">
+                  <div className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-primary mb-6 flex items-center gap-2 font-bold tracking-widest">
                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     AI CO-PILOT
                   </div>
                   <div className="space-y-md flex flex-col">
-                    <div className="bg-surface-variant/40 p-sm rounded-xl text-xs text-outline border border-white/5 max-w-[85%] self-start">
+                    <div className="bg-surface-variant/40 p-4 rounded-xl text-xs text-outline border border-white/5 max-w-[85%] self-start">
                       What were the key drivers for Q3 revenue growth?
                     </div>
-                    <div className="bg-primary-container/10 p-sm rounded-xl text-xs text-on-primary-container border border-primary/20 max-w-[90%] self-end">
+                    <div className="bg-primary-container/10 p-4 rounded-xl text-xs text-on-primary-container border border-primary/20 max-w-[90%] self-end">
                       The <span className="text-primary font-bold">14% growth</span> in Q3 was primarily driven by the expansion of the APAC market...
                     </div>
                   </div>
                 </div>
-                <div className="h-10 bg-surface-container rounded-full border border-white/10 flex items-center px-sm gap-sm">
+                <div className="h-10 bg-surface-container rounded-full border border-white/10 flex items-center px-sm gap-4">
                   <div className="flex-1 text-[10px] text-outline">Type a command...</div>
-                  <span className="material-symbols-outlined text-sm text-primary">send</span>
+                  <Send className="w-5 h-5 text-sm text-primary" />
                 </div>
               </div>
 
@@ -529,21 +531,21 @@ export default function LandingPage() {
 
         {/* Customer Logos Section */}
         <section className="py-12 border-y border-white/5 bg-surface-container-lowest/30 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
             <p className="text-center text-[11px] tracking-[0.25em] uppercase text-white/35 mb-8 font-semibold">
               Trusted By Fortune 500 Innovators
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 items-center justify-items-center gap-x-8 gap-y-6 text-white/60">
               {[
-                ["architecture", "VECTOR"],
-                ["token", "QUANTUM"],
-                ["cloud_done", "STRATUS"],
-                ["account_tree", "NEXUS"],
-                ["grain", "SYNAPSE"],
-              ].map(([icon, label]) => (
-                <div key={label} className="enterprise-logo flex items-center gap-2 text-sm font-bold tracking-[0.18em]">
-                  <span className="material-symbols-outlined text-[20px] text-primary/80">{icon}</span>
+                { Icon: Network, label: "VECTOR" },
+                { Icon: Cpu, label: "QUANTUM" },
+                { Icon: Cloud, label: "STRATUS" },
+                { Icon: Compass, label: "NEXUS" },
+                { Icon: GitBranch, label: "SYNAPSE" },
+              ].map(({ Icon, label }) => (
+                <div key={label} className="enterprise-logo group flex items-center gap-2 text-sm font-bold tracking-[0.18em] opacity-50 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                  <Icon className="w-5 h-5 text-zinc-500 group-hover:text-primary transition-colors stroke-[1.5]" />
                   <span>{label}</span>
                 </div>
               ))}
@@ -552,19 +554,19 @@ export default function LandingPage() {
         </section>
 
         {/* Features Bento Grid */}
-        <section id="features" className="py-xl px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto">
-          <div className="mb-lg text-center reveal">
-            <h2 className="text-headline-lg font-headline-lg text-on-surface mb-base">Precision Intelligence Infrastructure</h2>
-            <p className="text-body-md font-body-md text-outline max-w-2xl mx-auto">Eliminate guesswork with features designed for high-velocity decision making.</p>
+        <section id="features" className="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
+          <div className="mb-10 text-center reveal">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-snug  text-on-surface mb-2">Precision Intelligence Infrastructure</h2>
+            <p className="text-sm md:text-base text-zinc-400 font-normal  text-outline max-w-2xl mx-auto">Eliminate guesswork with features designed for high-velocity decision making.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Bento Card 1 (Advanced AI Analytics) */}
             <Link 
               href="/console/analytics"
               onClick={(e) => handleConsoleNavigate(e, "/console/analytics")}
-              className="md:col-span-8 glass-panel rounded-2xl p-md md:p-lg flex min-w-0 flex-col md:flex-row gap-lg group hover:border-primary/30 transition-all reveal cursor-pointer"
+              className="lg:col-span-8 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex min-w-0 flex-col lg:flex-row lg:items-stretch gap-8 group hover:border-primary/30 transition-all reveal cursor-pointer min-h-[380px]"
             >
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
               <div className="min-w-0 flex-1 space-y-md flex flex-col justify-between">
@@ -572,18 +574,18 @@ export default function LandingPage() {
                   <span className="p-base bg-primary/10 text-primary rounded-xl inline-flex material-symbols-outlined">
                     monitoring
                   </span>
-                  <h3 className="text-headline-md font-headline-md">Advanced AI Analytics</h3>
-                  <p className="text-body-md text-outline">
+                  <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">Advanced AI Analytics</h3>
+                  <p className="text-sm md:text-base text-zinc-400 font-normal text-outline">
                     Our proprietary neural engine identifies patterns and anomalies across trillion-row datasets in milliseconds, delivering ready-to-present visualizations automatically.
                   </p>
                 </div>
-                <ul className="space-y-sm text-label-md text-on-surface-variant pt-base">
-                  <li className="flex items-center gap-sm">
-                    <span className="material-symbols-outlined text-primary text-body-md">check_circle</span>
+                <ul className="space-y-sm text-xs md:text-sm font-medium text-on-surface-variant pt-base">
+                  <li className="flex items-center gap-4">
+                    <CheckCircle2 className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" />
                     Predictive modeling &amp; trend forecasting
                   </li>
-                  <li className="flex items-center gap-sm">
-                    <span className="material-symbols-outlined text-primary text-body-md">check_circle</span>
+                  <li className="flex items-center gap-4">
+                    <CheckCircle2 className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" />
                     Anomaly detection &amp; threat mapping
                   </li>
                 </ul>
@@ -602,21 +604,21 @@ export default function LandingPage() {
             <Link 
               href="/console/copilot"
               onClick={(e) => handleConsoleNavigate(e, "/console/copilot")}
-              className="md:col-span-4 glass-panel rounded-2xl p-md md:p-lg flex min-w-0 flex-col justify-between gap-md group hover:border-secondary/30 transition-all reveal cursor-pointer"
+              className="lg:col-span-4 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex min-w-0 flex-col justify-between gap-6 group hover:border-secondary/30 transition-all reveal cursor-pointer"
             >
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
               <div className="space-y-md">
                 <span className="p-base bg-secondary/10 text-secondary rounded-xl inline-flex w-fit material-symbols-outlined">
                   forum
                 </span>
-                <h3 className="text-headline-md font-headline-md">Natural Language Querying</h3>
-                <p className="text-body-md text-outline">
+                <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">Natural Language Querying</h3>
+                <p className="text-sm md:text-base text-zinc-400 font-normal text-outline">
                   No SQL required. Ask questions in plain English and receive instant, structured data responses formatted for your specific business context.
                 </p>
               </div>
               <div className="pt-md border-t border-white/5 flex items-center justify-between">
-                <span className="text-label-sm font-label-sm text-secondary uppercase tracking-widest font-bold">LEARN MORE</span>
-                <span className="material-symbols-outlined text-secondary font-bold">arrow_forward</span>
+                <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-secondary uppercase tracking-widest font-bold">LEARN MORE</span>
+                <ArrowRight className="w-5 h-5 text-secondary font-bold" />
               </div>
             </Link>
 
@@ -624,19 +626,19 @@ export default function LandingPage() {
             <Link 
               href="/console/dashboard"
               onClick={(e) => handleConsoleNavigate(e, "/console/dashboard")}
-              className="md:col-span-4 glass-panel rounded-2xl p-md md:p-lg flex min-w-0 flex-col justify-between gap-md group hover:border-tertiary/30 transition-all reveal cursor-pointer"
+              className="lg:col-span-4 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex min-w-0 flex-col justify-between gap-6 group hover:border-tertiary/30 transition-all reveal cursor-pointer"
             >
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
               <div className="space-y-md">
                 <span className="p-base bg-tertiary/10 text-tertiary rounded-xl inline-flex w-fit material-symbols-outlined">
                   dashboard_customize
                 </span>
-                <h3 className="text-headline-md font-headline-md">Bento-Style Builder</h3>
-                <p className="text-body-md text-outline">
+                <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">Bento-Style Builder</h3>
+                <p className="text-sm md:text-base text-zinc-400 font-normal text-outline">
                   Build sophisticated executive dashboards in minutes using our intuitive drag-and-drop bento grid interface with intelligent placement.
                 </p>
               </div>
-              <div className="mt-auto h-24 bg-surface-container rounded-lg overflow-hidden flex items-end px-xs gap-xs border border-white/5">
+              <div className="mt-auto h-24 bg-surface-container rounded-lg overflow-hidden flex items-end px-xs gap-2 border border-white/5">
                 <div className="flex-1 h-[30%] bg-tertiary/30 rounded-t float-anim"></div>
                 <div className="flex-1 h-[60%] bg-tertiary/30 rounded-t float-anim-delay"></div>
                 <div className="flex-1 h-[90%] bg-tertiary/30 rounded-t float-anim"></div>
@@ -648,27 +650,27 @@ export default function LandingPage() {
             <Link 
               href="/console/datasets"
               onClick={(e) => handleConsoleNavigate(e, "/console/datasets")}
-              className="md:col-span-8 glass-panel rounded-2xl p-md md:p-lg flex min-w-0 flex-col justify-between gap-md group hover:border-primary/30 transition-all reveal cursor-pointer text-center md:text-left"
+              className="lg:col-span-12 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex min-w-0 flex-col lg:flex-row lg:items-center justify-between gap-8 min-h-[220px] group hover:border-primary/30 transition-all reveal cursor-pointer text-left"
             >
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-10 pointer-events-none"></div>
               <div className="space-y-md">
-                <h3 className="text-headline-md font-headline-md">Unmatched Enterprise Interoperability</h3>
+                <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">Unmatched Enterprise Interoperability</h3>
                 <p className="w-full max-w-3xl text-lg leading-8 text-gray-400 text-pretty">
                   Connect to your entire stack with 200+ native connectors including Snowflake, AWS, Salesforce, and SAP. No migrations needed-Sturvixa reads data at the source.
                 </p>
               </div>
-              <div className="flex justify-center md:justify-start gap-md pt-base">
-                <div className="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-headline-md">database</span>
+              <div className="flex justify-center md:justify-start gap-6 pt-base">
+                <div className="p-6 bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
+                  <Database className="w-5 h-5 text-xl md:text-2xl font-bold tracking-tight" />
                 </div>
-                <div className="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-headline-md">cloud</span>
+                <div className="p-6 bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
+                  <Cloud className="w-5 h-5 text-xl md:text-2xl font-bold tracking-tight" />
                 </div>
-                <div className="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-headline-md">hub</span>
+                <div className="p-6 bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
+                  <Network className="w-5 h-5 text-xl md:text-2xl font-bold tracking-tight" />
                 </div>
-                <div className="p-md bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-headline-md">integration_instructions</span>
+                <div className="p-6 bg-surface-container rounded-xl border border-white/5 hover:scale-110 transition-transform">
+                  <Terminal className="w-5 h-5 text-xl md:text-2xl font-bold tracking-tight" />
                 </div>
               </div>
             </Link>
@@ -677,34 +679,34 @@ export default function LandingPage() {
         </section>
 
         {/* Scalable Intelligence Tiers (Pricing) */}
-        <section id="pricing" className="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest/30 overflow-hidden">
+        <section id="pricing" className="py-16 md:py-24 px-4 md:px-8 bg-surface-container-lowest/30 overflow-hidden">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-lg reveal">
-              <h2 className="text-headline-lg font-headline-lg text-on-surface">Scalable Intelligence Tiers</h2>
-              <p className="text-body-md font-body-md text-outline mt-2">Transparent pricing for organizations at every stage of AI maturity.</p>
+            <div className="text-center mb-10 reveal">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-snug  text-on-surface">Scalable Intelligence Tiers</h2>
+              <p className="text-sm md:text-base text-zinc-400 font-normal  text-outline mt-2">Transparent pricing for organizations at every stage of AI maturity.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
               
               {/* Startup Plan */}
-              <div className="glass-panel p-6 md:p-8 rounded-2xl flex min-h-[540px] flex-col justify-between gap-6 border border-white/5 reveal">
+              <div className="glass-panel p-6 md:p-8 rounded-2xl flex h-full min-h-[540px] flex-col justify-between gap-6 border border-white/5 reveal">
                 <div className="space-y-md">
                   <div className="space-y-xs">
-                    <p className="text-label-sm font-label-sm text-outline uppercase tracking-widest">Startup</p>
-                    <h3 className="text-headline-md font-headline-md">
-                      $499<span className="text-body-md text-outline font-normal">/mo</span>
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline uppercase tracking-widest">Startup</p>
+                    <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">
+                      $499<span className="text-sm md:text-base text-zinc-400 font-normal text-outline font-normal">/mo</span>
                     </h3>
                   </div>
-                  <p className="text-body-md text-on-surface-variant leading-relaxed">For small teams getting started with automated reporting.</p>
-                  <ul className="space-y-sm text-label-md text-on-surface-variant font-medium pt-md border-t border-white/5">
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> 5 Data Connectors
+                  <p className="text-sm md:text-base text-zinc-400 font-normal text-on-surface-variant leading-relaxed">For small teams getting started with automated reporting.</p>
+                  <ul className="space-y-sm text-xs md:text-sm font-medium text-on-surface-variant font-medium pt-md border-t border-white/5">
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> 5 Data Connectors
                     </li>
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> 1,000 AI Queries/mo
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> 1,000 AI Queries/mo
                     </li>
-                    <li className="flex items-center gap-sm text-outline/40">
-                      <span className="material-symbols-outlined text-body-md">close</span> Custom Training
+                    <li className="flex items-center gap-4 text-outline/40">
+                      <X className="w-5 h-5 text-sm md:text-base text-zinc-400 font-normal" /> Custom Training
                     </li>
                   </ul>
                 </div>
@@ -717,7 +719,7 @@ export default function LandingPage() {
               </div>
 
               {/* Growth Plan (Popular Featured tier) */}
-              <div className="relative flex min-h-[540px] flex-col justify-between gap-6 rounded-2xl border border-primary/45 bg-primary/10 backdrop-blur-xl p-6 pt-8 md:p-8 md:pt-10 shadow-2xl overflow-visible">
+              <div className="relative flex h-full min-h-[540px] flex-col justify-between gap-6 rounded-2xl border border-primary/45 bg-primary/10 backdrop-blur-xl p-6 pt-8 md:p-8 md:pt-10 shadow-2xl overflow-visible">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-on-primary text-[10px] font-bold rounded-full uppercase tracking-wider border border-white/20 shadow-lg whitespace-nowrap">
                   Most Popular
                 </div>
@@ -725,21 +727,21 @@ export default function LandingPage() {
                 
                 <div className="space-y-md">
                   <div className="space-y-xs">
-                    <p className="text-label-sm font-label-sm text-primary uppercase tracking-widest">Growth</p>
-                    <h3 className="text-headline-md font-headline-md">
-                      $1,299<span className="text-body-md text-outline font-normal">/mo</span>
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-primary uppercase tracking-widest">Growth</p>
+                    <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">
+                      $1,299<span className="text-sm md:text-base text-zinc-400 font-normal text-outline font-normal">/mo</span>
                     </h3>
                   </div>
-                  <p className="text-body-md text-on-surface-variant leading-relaxed">For high-growth companies requiring deep analytics.</p>
-                  <ul className="space-y-sm text-label-md text-on-surface-variant font-medium pt-md border-t border-primary/20">
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> 50 Data Connectors
+                  <p className="text-sm md:text-base text-zinc-400 font-normal text-on-surface-variant leading-relaxed">For high-growth companies requiring deep analytics.</p>
+                  <ul className="space-y-sm text-xs md:text-sm font-medium text-on-surface-variant font-medium pt-md border-t border-primary/20">
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> 50 Data Connectors
                     </li>
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> Unlimited AI Queries
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> Unlimited AI Queries
                     </li>
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> Predictor API Access
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> Predictor API Access
                     </li>
                   </ul>
                 </div>
@@ -752,22 +754,22 @@ export default function LandingPage() {
               </div>
 
               {/* Enterprise Plan */}
-              <div className="glass-panel p-6 md:p-8 rounded-2xl flex min-h-[540px] flex-col justify-between gap-6 border border-white/5 reveal">
+              <div className="glass-panel p-6 md:p-8 rounded-2xl flex h-full min-h-[540px] flex-col justify-between gap-6 border border-white/5 reveal">
                 <div className="space-y-md">
                   <div className="space-y-xs">
-                    <p className="text-label-sm font-label-sm text-outline uppercase tracking-widest">Enterprise</p>
-                    <h3 className="text-headline-md font-headline-md">Custom</h3>
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline uppercase tracking-widest">Enterprise</p>
+                    <h3 className="text-xl md:text-2xl font-bold tracking-tight font-headline-md">Custom</h3>
                   </div>
-                  <p className="text-body-md text-on-surface-variant leading-relaxed">Bespoke infrastructure for global scale and security.</p>
-                  <ul className="space-y-sm text-label-md text-on-surface-variant font-medium pt-md border-t border-white/5">
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> Private Cloud Deploy
+                  <p className="text-sm md:text-base text-zinc-400 font-normal text-on-surface-variant leading-relaxed">Bespoke infrastructure for global scale and security.</p>
+                  <ul className="space-y-sm text-xs md:text-sm font-medium text-on-surface-variant font-medium pt-md border-t border-white/5">
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> Private Cloud Deploy
                     </li>
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> Custom LLM Training
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> Custom LLM Training
                     </li>
-                    <li className="flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-primary text-body-md">done</span> 24/7 Priority Support
+                    <li className="flex items-center gap-4">
+                      <Check className="w-5 h-5 text-primary text-sm md:text-base text-zinc-400 font-normal" /> 24/7 Priority Support
                     </li>
                   </ul>
                 </div>
@@ -784,22 +786,22 @@ export default function LandingPage() {
         </section>
 
         {/* Executive Testimonial Quote */}
-        <section className="py-xl px-margin-desktop text-center relative overflow-hidden">
-          <div className="max-w-3xl mx-auto glass-panel p-xl rounded-[2rem] border-white/10 relative reveal">
+        <section className="py-12 px-6 text-center relative overflow-hidden">
+          <div className="max-w-4xl mx-auto glass-panel p-8 md:p-14 rounded-[2rem] border-white/10 relative reveal">
             <span className="text-[120px] font-serif font-bold text-primary/10 absolute -top-16 left-1/2 -translate-x-1/2 select-none">&quot;</span>
             
-            <p className="text-headline-md italic font-light text-on-surface mb-lg leading-relaxed relative z-10">
+            <p className="text-xl md:text-2xl font-bold tracking-tight italic font-light text-on-surface mb-10 leading-relaxed relative z-10">
               &quot;Sturvixa AI didn&apos;t just give us a dashboard; they gave us a board member who never sleeps. Our decision velocity has increased by 4x since implementation.&quot;
             </p>
-            <div className="flex flex-col items-center gap-base relative z-10">
+            <div className="flex flex-col items-center gap-2 relative z-10">
               <img 
                 alt="Dayamay Das headshot" 
                 className="w-16 h-16 rounded-full border-2 border-primary object-cover" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBliHfxAgSkrnilnO_mr2EtqlHRD1NNnmQf1XOfHu_menIuZ6VUT7m4fJhWcGiDmi0PxZjbk_Ok4fXib1IepMeQBecyJy9-gX_c7njIDlkw9LhcibNMURIhl0yrsCzbuddGiqdBinoPPMGKORP7ZrmQObCcb4W8SE8-FYwg_qcjYdVeVAk4SCx4FmgI8ou132nzpXX8imzivIiWqy0vQgqkulPEhCC_VNlBiDpxhxXGrlQhyt1loQ5dNa4kiOFcTPJVZhb79XW1OE0G"
               />
               <div>
-                <p className="font-bold text-on-surface text-body-md">Dayamay Das</p>
-                <p className="text-label-sm text-outline uppercase tracking-wider">Chief Data Officer, Global Logistics Corp</p>
+                <p className="font-bold text-on-surface text-sm md:text-base text-zinc-400 font-normal">Dayamay Das</p>
+                <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline uppercase tracking-wider">Chief Data Officer, Global Logistics Corp</p>
               </div>
             </div>
           </div>
@@ -807,20 +809,20 @@ export default function LandingPage() {
       </main>
 
       {/* Footer conforming strictly to mockup navigation items */}
-      <footer className="bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md z-30">
-        <div className="flex flex-col items-center md:items-start gap-xs text-center md:text-left">
-          <span className="text-label-md font-bold text-on-surface">Sturvixa AI</span>
-          <p className="text-label-sm font-label-sm text-outline">(c) 2026 Sturvixa AI. Visionary Reliability.</p>
+      <footer className="bg-surface-container-lowest border-t border-outline-variant w-full py-12 md:py-16 px-8 flex flex-col md:flex-row justify-between items-center gap-6 z-30">
+        <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
+          <span className="text-xs md:text-sm font-medium font-bold text-on-surface">Sturvixa AI</span>
+          <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline">(c) 2026 Sturvixa AI. Visionary Reliability.</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-md">
-          <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Privacy Policy</a>
-          <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Terms of Service</a>
-          <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Security</a>
-          <a className="text-label-sm font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Status</a>
+        <div className="flex flex-wrap justify-center gap-6">
+          <a className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Privacy Policy</a>
+          <a className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Terms of Service</a>
+          <a className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Security</a>
+          <a className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-label-sm text-outline hover:text-on-surface opacity-80 hover:opacity-100 transition-colors" href="#">Status</a>
         </div>
-        <div className="flex gap-md">
-          <a className="text-outline hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">public</span></a>
-          <a className="text-outline hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">alternate_email</span></a>
+        <div className="flex gap-6">
+          <a className="text-outline hover:text-primary transition-colors" href="#"><Globe  /></a>
+          <a className="text-outline hover:text-primary transition-colors" href="#"><Mail  /></a>
         </div>
       </footer>
 
@@ -838,29 +840,29 @@ export default function LandingPage() {
               className="absolute top-4 right-4 text-outline hover:text-on-surface transition-colors p-1 cursor-pointer z-20"
               title="Close Dialog"
             >
-              <span className="material-symbols-outlined text-body-lg">close</span>
+              <X className="w-5 h-5 text-base md:text-lg text-zinc-400 font-normal" />
             </button>
 
             {demoSubmitted ? (
-              <div className="text-center py-lg space-y-md animate-fade-in relative z-10">
+              <div className="text-center py-12 md:py-16 space-y-md animate-fade-in relative z-10">
                 <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-full flex items-center justify-center mx-auto text-primary animate-bounce">
-                  <span className="material-symbols-outlined text-headline-lg font-bold">verified</span>
+                  <CheckCircle2 className="w-5 h-5 text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-snug font-bold" />
                 </div>
                 <div className="space-y-xs">
-                  <h3 className="text-headline-md font-bold text-on-surface">Request Transmitted!</h3>
-                  <p className="text-label-sm text-outline px-sm leading-relaxed">
+                  <h3 className="text-xl md:text-2xl font-bold tracking-tight font-bold text-on-surface">Request Transmitted!</h3>
+                  <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline px-sm leading-relaxed">
                     Demo credentials generated. Node access authorization is pending review. Redirecting to your sandbox console environment...
                   </p>
                 </div>
-                <div className="flex items-center justify-center gap-xs text-primary font-bold text-label-sm animate-pulse">
-                  <span className="material-symbols-outlined animate-spin text-label-md">sync</span>
+                <div className="flex items-center justify-center gap-2 text-primary font-bold text-[10px] md:text-xs font-semibold tracking-wider uppercase animate-pulse">
+                  <RefreshCw className="w-5 h-5 animate-spin text-xs md:text-sm font-medium" />
                   Initializing Secure Connection...
                 </div>
               </div>
             ) : (
               <>
                 {/* Tab Switcher */}
-                <div className="flex min-w-0 bg-surface-container rounded-lg p-1 border border-white/5 select-none text-label-sm font-bold mb-6 relative z-10">
+                <div className="flex min-w-0 bg-surface-container rounded-lg p-1 border border-white/5 select-none text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold mb-6 relative z-10">
                   <button 
                     onClick={() => {
                       setModalMode("login");
@@ -896,13 +898,13 @@ export default function LandingPage() {
 
                     <form onSubmit={handleLoginSubmit} className="space-y-5 relative z-10">
                       {authError && (
-                        <div className="p-sm bg-error/10 border border-error/35 text-error text-label-sm rounded-lg">
+                        <div className="p-4 bg-error/10 border border-error/35 text-error text-[10px] md:text-xs font-semibold tracking-wider uppercase rounded-lg">
                           {authError}
                         </div>
                       )}
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Email Address</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Email Address</label>
                         <input 
                           type="email" 
                           value={email}
@@ -913,7 +915,7 @@ export default function LandingPage() {
                       </div>
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Access Token / Password</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Access Token / Password</label>
                         <input 
                           type="password" 
                           value={password}
@@ -930,33 +932,34 @@ export default function LandingPage() {
                       >
                         {isLoading ? (
                           <>
-                            <span className="material-symbols-outlined animate-spin text-body-md">sync</span>
+                            <RefreshCw className="w-5 h-5 animate-spin text-sm md:text-base text-zinc-400 font-normal" />
                             Authenticating Node...
                           </>
                         ) : (
                           <>
-                            <span className="material-symbols-outlined text-body-md">login</span>
+                            <LogIn className="w-5 h-5 text-sm md:text-base text-zinc-400 font-normal" />
                             Initiate Secure Connection
                           </>
                         )}
                       </button>
                     </form>
 
-                    <div className="mt-md pt-md border-t border-white/5 flex flex-col gap-sm text-center relative z-10">
+                    <div className="mt-6 pt-md border-t border-white/5 flex flex-col gap-4 text-center relative z-10">
                       <button 
-                        onClick={() => {
+                        onClick={async () => {
                           setIsLoading(true);
-                          setTimeout(() => {
-                            setIsLoading(false);
-                            sessionStorage.setItem("is_authenticated", "true");
-                            setIsAuthenticated(true);
-                            setShowLoginModal(false);
-                            router.push(redirectPath);
-                          }, 800);
+                          await signIn("credentials", {
+                            redirect: false,
+                            email: "admin@sturvixa.ai",
+                            password: "admin",
+                          });
+                          setIsLoading(false);
+                          setShowLoginModal(false);
+                          router.push(redirectPath);
                         }}
-                        className="w-full py-2 bg-primary/10 border border-primary/20 text-primary font-bold rounded-lg text-label-sm hover:bg-primary/25 transition-all flex items-center justify-center gap-xs cursor-pointer"
+                        className="w-full py-2 bg-primary/10 border border-primary/20 text-primary font-bold rounded-lg text-[10px] md:text-xs font-semibold tracking-wider uppercase hover:bg-primary/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-label-md">bolt</span>
+                        <Zap className="w-5 h-5 text-xs md:text-sm font-medium" />
                         Sign In as Demo Admin (Fast-track)
                       </button>
                       
@@ -976,13 +979,13 @@ export default function LandingPage() {
 
                     <form onSubmit={handleDemoSubmit} className="space-y-4 relative z-10">
                       {authError && (
-                        <div className="p-sm bg-error/10 border border-error/35 text-error text-label-sm rounded-lg">
+                        <div className="p-4 bg-error/10 border border-error/35 text-error text-[10px] md:text-xs font-semibold tracking-wider uppercase rounded-lg">
                           {authError}
                         </div>
                       )}
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Full Name</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Full Name</label>
                         <input 
                           type="text" 
                           value={demoName}
@@ -994,7 +997,7 @@ export default function LandingPage() {
                       </div>
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Work Email</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Work Email</label>
                         <input 
                           type="email" 
                           value={demoEmail}
@@ -1006,7 +1009,7 @@ export default function LandingPage() {
                       </div>
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Company / Organization</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Company / Organization</label>
                         <input 
                           type="text" 
                           value={demoCompany}
@@ -1018,7 +1021,7 @@ export default function LandingPage() {
                       </div>
 
                       <div className="space-y-xs">
-                        <label className="text-label-sm text-outline font-bold">Use Case Details (Optional)</label>
+                        <label className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-bold">Use Case Details (Optional)</label>
                         <input 
                           type="text" 
                           value={demoMessage}
@@ -1035,19 +1038,19 @@ export default function LandingPage() {
                       >
                         {isLoading ? (
                           <>
-                            <span className="material-symbols-outlined animate-spin text-body-md">sync</span>
+                            <RefreshCw className="w-5 h-5 animate-spin text-sm md:text-base text-zinc-400 font-normal" />
                             Provisioning Workspace...
                           </>
                         ) : (
                           <>
-                            <span className="material-symbols-outlined text-body-md">auto_awesome</span>
+                            <Sparkles className="w-5 h-5 text-sm md:text-base text-zinc-400 font-normal" />
                             Request Sandbox Access
                           </>
                         )}
                       </button>
                     </form>
 
-                    <div className="mt-md pt-md border-t border-white/5 text-center relative z-10">
+                    <div className="mt-6 pt-md border-t border-white/5 text-center relative z-10">
                       <span className="text-[10px] text-outline opacity-60">
                         Demo workspace features fully simulated NeonDB tables &amp; telemetry streams.
                       </span>
@@ -1071,10 +1074,10 @@ export default function LandingPage() {
           ></div>
           
           {/* Drawer Content */}
-          <aside className="relative w-80 max-w-[85vw] h-full bg-[#13121bf2] backdrop-blur-2xl border-r border-white/10 p-md flex flex-col justify-between shadow-2xl animate-slide-in">
+          <aside className="relative w-80 max-w-[85vw] h-full bg-[#13121bf2] backdrop-blur-2xl border-r border-white/10 p-6 flex flex-col justify-between shadow-2xl animate-slide-in">
             <div className="space-y-lg flex flex-col h-full overflow-y-auto">
               <div className="flex justify-between items-center pb-sm border-b border-white/5">
-                <span className="text-headline-md font-bold text-primary tracking-tight">
+                <span className="text-xl md:text-2xl font-bold tracking-tight font-bold text-primary tracking-tight">
                   Sturvixa AI
                 </span>
                 
@@ -1083,18 +1086,18 @@ export default function LandingPage() {
                   className="p-2 text-outline hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center justify-center cursor-pointer"
                   title="Close Navigation"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <X  />
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-sm">
+              <nav className="flex flex-col gap-4">
                 <Link
                   href="/console/dashboard"
                   onClick={(e) => {
                     setMobileMenuOpen(false);
                     handleConsoleNavigate(e, "/console/dashboard");
                   }}
-                  className="w-full text-left p-md rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-label-md cursor-pointer"
+                  className="w-full text-left p-6 rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-xs md:text-sm font-medium cursor-pointer"
                 >
                   Dashboard
                 </Link>
@@ -1104,7 +1107,7 @@ export default function LandingPage() {
                     setMobileMenuOpen(false);
                     handleConsoleNavigate(e, "/console/analytics");
                   }}
-                  className="w-full text-left p-md rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-label-md cursor-pointer"
+                  className="w-full text-left p-6 rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-xs md:text-sm font-medium cursor-pointer"
                 >
                   Analytics
                 </Link>
@@ -1114,7 +1117,7 @@ export default function LandingPage() {
                     setMobileMenuOpen(false);
                     handleConsoleNavigate(e, "/console/models");
                   }}
-                  className="w-full text-left p-md rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-label-md cursor-pointer"
+                  className="w-full text-left p-6 rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-xs md:text-sm font-medium cursor-pointer"
                 >
                   Models
                 </Link>
@@ -1124,20 +1127,20 @@ export default function LandingPage() {
                     setMobileMenuOpen(false);
                     handleConsoleNavigate(e, "/console/datasets");
                   }}
-                  className="w-full text-left p-md rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-label-md cursor-pointer"
+                  className="w-full text-left p-6 rounded-xl border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all font-bold text-xs md:text-sm font-medium cursor-pointer"
                 >
                   Datasets
                 </Link>
               </nav>
             </div>
 
-            <div className="p-md bg-surface-container-lowest border border-white/5 rounded-xl space-y-sm mt-auto">
+            <div className="p-6 bg-surface-container-lowest border border-white/5 rounded-xl space-y-sm mt-auto">
               <span className="text-[10px] text-outline uppercase tracking-widest block font-bold">
                 ENTERPRISE TELEMETRY NODE
               </span>
               <div className="flex justify-between items-center text-[10px] font-bold text-outline">
                 <span>Frankfurt EU-1</span>
-                <span className="text-emerald-400 font-extrabold flex items-center gap-xs">
+                <span className="text-emerald-400 font-extrabold flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
                   Connected
                 </span>

@@ -51,16 +51,7 @@
   --font-headline-lg-mobile: "Inter", sans-serif;
   --font-label-sm: "Inter", sans-serif;
 
-  /* Spacing */
-  --spacing-base: 8px;
-  --spacing-xl: 80px;
-  --spacing-sm: 12px;
-  --spacing-margin-mobile: 16px;
-  --spacing-margin-desktop: 32px;
-  --spacing-gutter: 24px;
-  --spacing-xs: 4px;
-  --spacing-lg: 48px;
-  --spacing-md: 24px;
+  /* Spacing removed to prevent Tailwind v4 max-width collapse */
 
   /* Radius */
   --radius-lg: 0.5rem;

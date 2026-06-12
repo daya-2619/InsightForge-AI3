@@ -1,12 +1,14 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { Activity, AlertOctagon, AlertTriangle, ArrowLeftRight, ArrowRight, Beaker, Bell, Brain, Calendar, Check, CheckCircle2, ChevronRight, Cloud, Compass, Copy, Cpu, CreditCard, Database, Eye, EyeOff, GitBranch, Globe, HardDrive, HelpCircle, Key, Layers, LayoutGrid, Loader2, LogIn, LogOut, Mail, Menu, MessageSquare, Network, PieChart, Play, Power, RefreshCw, Rocket, Search, Send, Server, Settings, ShieldCheck, Sliders, SlidersHorizontal, Sparkles, Star, Terminal, TrendingUp, Users, Wallet, X, Zap } from 'lucide-react';
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 interface MenuItem {
   name: string;
   path: string;
-  icon: string;
+  icon: React.ElementType;
   desc: string;
 }
 
@@ -23,35 +25,37 @@ export default function ConsoleLayout({
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  const { data: session } = useSession();
+
   const menuItems: MenuItem[] = [
     {
       name: "Dashboard",
       path: "/console/dashboard",
-      icon: "dashboard",
+      icon: LayoutGrid,
       desc: "Live Revenue & Performance KPIs",
     },
     {
       name: "Analytics Workspace",
       path: "/console/analytics",
-      icon: "monitoring",
+      icon: Activity,
       desc: "Telemetry Logs & Root Cause Analysis",
     },
     {
       name: "Models",
       path: "/console/models",
-      icon: "hub",
+      icon: Network,
       desc: "Parameters & Neural Benchmarks",
     },
     {
       name: "Datasets",
       path: "/console/datasets",
-      icon: "database",
+      icon: Database,
       desc: "NeonDB Schema & Live Tables",
     },
     {
       name: "AI Copilot",
       path: "/console/copilot",
-      icon: "auto_awesome",
+      icon: Sparkles,
       desc: "Conversational SQL & Metric Charts",
     },
   ];
@@ -63,19 +67,19 @@ export default function ConsoleLayout({
       <div className="crystalline absolute inset-0 z-0 pointer-events-none opacity-[0.02]"></div>
 
       {/* Top Header Navigation Bar */}
-      <header className="bg-surface/50 backdrop-blur-xl border-b border-white/5 flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 sticky top-0 z-30">
-        <div className="flex min-w-0 items-center gap-md">
+      <header className="bg-surface/50 backdrop-blur-xl border-b border-white/5 flex justify-between items-center w-full px-4 md:px-8 h-16 sticky top-0 z-30">
+        <div className="flex min-w-0 items-center gap-6">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="md:hidden p-2 -ml-2 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center justify-center cursor-pointer"
             title="Open Navigation"
           >
-            <span className="material-symbols-outlined text-headline-md">menu</span>
+            <Menu className="w-6 h-6" />
           </button>
           
           <button 
             onClick={() => router.push("/")}
-            className="min-w-0 flex items-center gap-2 text-xl md:text-headline-md font-extrabold text-primary tracking-normal hover:opacity-90 transition-opacity whitespace-nowrap"
+            className="min-w-0 flex items-center gap-2 text-xl md:text-xl md:text-2xl font-bold tracking-tight font-extrabold text-primary tracking-normal hover:opacity-90 transition-opacity whitespace-nowrap"
           >
             <svg className="w-8 h-8 shrink-0" viewBox="110 70 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -103,13 +107,13 @@ export default function ConsoleLayout({
         </div>
 
         {/* Action icons */}
-        <div className="flex shrink-0 items-center gap-sm">
+        <div className="flex shrink-0 items-center gap-4">
           <div className="relative">
             <button 
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-sm text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5"
+              className="p-4 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5"
             >
-              <span className="material-symbols-outlined text-body-lg">search</span>
+              <Search className="w-5 h-5 text-zinc-400" />
             </button>
             
             {searchOpen && (
@@ -119,14 +123,14 @@ export default function ConsoleLayout({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search logs, metrics..."
-                  className="w-full bg-surface-container-lowest border-b border-outline px-2 py-1.5 text-label-sm text-on-surface outline-none rounded"
+                  className="w-full bg-surface-container-lowest border-b border-outline px-2 py-1.5 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface outline-none rounded"
                 />
               </div>
             )}
           </div>
           
-          <button className="p-sm text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5 relative">
-            <span className="material-symbols-outlined text-body-lg">notifications</span>
+          <button className="p-4 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5 relative">
+            <Bell className="w-5 h-5 text-zinc-400" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
           </button>
           
@@ -137,10 +141,10 @@ export default function ConsoleLayout({
               }
               router.push("/");
             }}
-            className="p-sm text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5"
+            className="p-4 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-white/5"
             title="Return to Main Landing Page"
           >
-            <span className="material-symbols-outlined text-body-lg">logout</span>
+            <LogOut className="w-5 h-5 text-zinc-400" />
           </button>
 
           {/* User profile dropdown drawer */}
@@ -157,21 +161,19 @@ export default function ConsoleLayout({
             </button>
             
             {profileOpen && (
-              <div className="absolute right-0 top-10 w-56 p-md bg-surface-container-high border border-white/10 rounded-xl shadow-2xl z-50 animate-fade-in text-left">
-                <p className="font-bold text-on-surface text-label-md">Dayamay Das</p>
-                <p className="text-[10px] text-outline uppercase tracking-wider">Chief Data Officer</p>
+              <div className="absolute right-0 top-10 w-56 p-6 bg-surface-container-high border border-white/10 rounded-xl shadow-2xl z-50 animate-fade-in text-left">
+                <p className="font-bold text-on-surface text-xs md:text-sm font-medium">{session?.user?.name || "Dayamay Das"}</p>
+                <p className="text-[10px] text-outline uppercase tracking-wider">{((session?.user as any)?.role || "Chief Data Officer").toUpperCase()}</p>
                 <div className="border-t border-white/5 my-sm"></div>
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     setProfileOpen(false);
-                    if (typeof window !== "undefined") {
-                      sessionStorage.removeItem("is_authenticated");
-                    }
+                    await signOut({ redirect: false });
                     router.push("/");
                   }}
-                  className="w-full text-left py-1 text-label-sm text-error hover:brightness-110 flex items-center gap-xs font-bold"
+                  className="w-full text-left py-1 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-error hover:brightness-110 flex items-center gap-2 font-bold"
                 >
-                  <span className="material-symbols-outlined text-label-sm">power_settings_new</span>
+                  <Power className="w-4 h-4 text-error" />
                   Terminate Session
                 </button>
               </div>
@@ -184,26 +186,26 @@ export default function ConsoleLayout({
       <div className="flex-1 min-w-0 flex flex-col md:flex-row relative z-10">
         
         {/* Glassmorphic Side Navigation */}
-        <aside className="hidden md:flex w-80 shrink-0 border-r border-white/5 bg-surface-container-lowest/30 p-md flex-col justify-between">
-          <div className="space-y-lg">
+        <aside className="hidden md:flex w-80 shrink-0 border-r border-white/5 bg-surface-container-lowest/30 p-6 flex-col justify-between">
+          <div className="space-y-8">
             <div>
               <span className="text-[10px] font-bold text-outline-variant uppercase tracking-widest px-sm">
                 Primary Workspace
               </span>
-              <p className="text-label-md font-extrabold text-on-surface px-sm mt-xs flex items-center gap-xs">
+              <p className="text-xs md:text-sm font-medium font-extrabold text-on-surface px-sm mt-xs flex items-center gap-2">
                 <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
                 Node Cluster - Active
               </p>
             </div>
 
-            <nav className="space-y-sm">
+            <nav className="space-y-4">
               {menuItems.map((item) => {
                 const isActive = pathname === item.path;
                 return (
                   <button
                     key={item.path}
                     onClick={() => router.push(item.path)}
-                    className={`w-full text-left p-md rounded-xl transition-all relative flex gap-md items-center group overflow-hidden ${
+                    className={`w-full text-left p-6 rounded-xl transition-all relative flex gap-6 items-center group overflow-hidden ${
                       isActive 
                         ? "bg-primary/10 border border-primary/25 text-primary" 
                         : "border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant"
@@ -213,17 +215,14 @@ export default function ConsoleLayout({
                       <span className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r"></span>
                     )}
                     
-                    <span 
-                      className={`material-symbols-outlined text-2xl group-hover:scale-105 transition-transform ${
+                    <item.icon 
+                      className={`w-6 h-6 shrink-0 group-hover:scale-105 transition-transform ${
                         isActive ? "text-primary" : "text-outline"
                       }`}
-                      style={item.icon === "auto_awesome" && isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
-                    >
-                      {item.icon}
-                    </span>
+                    />
                     
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-label-md leading-tight truncate">{item.name}</p>
+                      <p className="font-bold text-xs md:text-sm font-medium leading-tight truncate">{item.name}</p>
                       <p className={`text-[10px] mt-xs font-semibold leading-tight ${isActive ? "text-primary/70" : "text-outline/70"}`}>
                         {item.desc}
                       </p>
@@ -235,7 +234,7 @@ export default function ConsoleLayout({
           </div>
 
           {/* Sidebar Telemetry Footer */}
-          <div className="p-md bg-surface-container-lowest border border-white/5 rounded-xl space-y-sm mt-auto">
+          <div className="p-6 bg-surface-container-lowest border border-white/5 rounded-xl space-y-4 mt-auto">
             <div className="flex justify-between items-center text-[10px] font-bold text-outline">
               <span>SQL LOG LATENCY</span>
               <span className="text-primary">122ms AVG</span>
@@ -264,14 +263,14 @@ export default function ConsoleLayout({
             ></div>
             
             {/* Drawer Content */}
-            <aside className="relative w-80 max-w-[85vw] h-full bg-[#13121bf2] backdrop-blur-2xl border-r border-white/10 p-md flex flex-col justify-between shadow-2xl animate-slide-in">
-              <div className="space-y-lg flex flex-col h-full overflow-y-auto">
+            <aside className="relative w-80 max-w-[85vw] h-full bg-[#13121bf2] backdrop-blur-2xl border-r border-white/10 p-6 flex flex-col justify-between shadow-2xl animate-slide-in">
+              <div className="space-y-8 flex flex-col h-full overflow-y-auto">
                 <div className="flex justify-between items-center pb-sm border-b border-white/5">
                   <div>
                     <span className="text-[10px] font-bold text-outline-variant uppercase tracking-widest px-sm">
                       Primary Workspace
                     </span>
-                    <p className="text-label-md font-extrabold text-on-surface px-sm mt-xs flex items-center gap-xs">
+                    <p className="text-xs md:text-sm font-medium font-extrabold text-on-surface px-sm mt-xs flex items-center gap-2">
                       <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
                       Node Cluster - Active
                     </p>
@@ -281,11 +280,11 @@ export default function ConsoleLayout({
                     onClick={() => setMobileSidebarOpen(false)}
                     className="p-2 text-outline hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center justify-center cursor-pointer"
                   >
-                    <span className="material-symbols-outlined">close</span>
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
 
-                <nav className="space-y-sm">
+                <nav className="space-y-4">
                   {menuItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
@@ -295,7 +294,7 @@ export default function ConsoleLayout({
                           router.push(item.path);
                           setMobileSidebarOpen(false);
                         }}
-                        className={`w-full text-left p-md rounded-xl transition-all relative flex gap-md items-center group overflow-hidden ${
+                        className={`w-full text-left p-6 rounded-xl transition-all relative flex gap-6 items-center group overflow-hidden ${
                           isActive 
                             ? "bg-primary/10 border border-primary/25 text-primary" 
                             : "border border-white/0 hover:border-white/5 hover:bg-white/5 text-on-surface-variant"
@@ -305,17 +304,14 @@ export default function ConsoleLayout({
                           <span className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r"></span>
                         )}
                         
-                        <span 
-                          className={`material-symbols-outlined text-2xl transition-transform ${
+                        <item.icon 
+                          className={`w-6 h-6 shrink-0 transition-transform ${
                             isActive ? "text-primary" : "text-outline"
                           }`}
-                          style={item.icon === "auto_awesome" && isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
-                        >
-                          {item.icon}
-                        </span>
+                        />
                         
                         <div className="flex-1">
-                          <p className="font-bold text-label-md leading-none">{item.name}</p>
+                          <p className="font-bold text-xs md:text-sm font-medium leading-none">{item.name}</p>
                           <p className={`text-[10px] mt-xs font-semibold leading-none ${isActive ? "text-primary/70" : "text-outline/70"}`}>
                             {item.desc}
                           </p>
@@ -327,7 +323,7 @@ export default function ConsoleLayout({
               </div>
 
               {/* Sidebar Telemetry Footer */}
-              <div className="p-md bg-surface-container-lowest border border-white/5 rounded-xl space-y-sm mt-auto">
+              <div className="p-6 bg-surface-container-lowest border border-white/5 rounded-xl space-y-4 mt-auto">
                 <div className="flex justify-between items-center text-[10px] font-bold text-outline">
                   <span>SQL LOG LATENCY</span>
                   <span className="text-primary">122ms AVG</span>
@@ -349,7 +345,7 @@ export default function ConsoleLayout({
         )}
 
         {/* Nested Viewport Content Area */}
-        <main className="min-w-0 flex-1 flex flex-col p-md md:p-lg overflow-y-auto md:max-h-[calc(100vh-64px)]">
+        <main className="min-w-0 flex-1 flex flex-col p-6 md:p-8 md:p-10 overflow-y-auto md:max-h-[calc(100vh-64px)]">
           {children}
         </main>
 

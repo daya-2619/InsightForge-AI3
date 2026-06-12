@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity, AlertOctagon, AlertTriangle, ArrowLeftRight, ArrowRight, Beaker, Bell, Brain, Calendar, Check, CheckCircle2, ChevronRight, Cloud, Compass, Copy, Cpu, CreditCard, Database, Eye, EyeOff, GitBranch, Globe, HardDrive, HelpCircle, Key, Layers, LayoutGrid, Loader2, LogIn, LogOut, Mail, Menu, MessageSquare, Mic, Network, Paperclip, PieChart, Play, Power, RefreshCw, Rocket, Search, Send, Server, Settings, ShieldCheck, Sliders, SlidersHorizontal, Sparkles, Star, Table, Terminal, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, X, Zap } from 'lucide-react';
 import { useState, useEffect } from "react";
 
 interface DBTable {
@@ -268,31 +269,31 @@ export default function DatasetsPage() {
 
 
   return (
-    <div className="space-y-lg flex-1 relative flex flex-col min-h-0 min-w-0 select-none">
+    <div className="space-y-8 flex-1 relative flex flex-col min-h-0 min-w-0 select-none">
       
       {/* Page Header */}
-      <section className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-md shrink-0">
+      <section className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shrink-0">
         <div className="min-w-0">
-          <h1 className="text-3xl font-extrabold text-on-surface flex items-center gap-sm tracking-tight leading-none">
+          <h1 className="text-3xl font-extrabold text-on-surface flex items-center gap-4 tracking-tight leading-none">
             NeonDB Pipeline & Ingestor
           </h1>
-          <p className="text-body-md text-outline mt-1.5 font-semibold">
+          <p className="text-sm md:text-base text-zinc-400 font-normal text-outline mt-1.5 font-semibold">
             Configure Neon PostgreSQL servers, test connections, and ingest CSV or JSON datasets directly into tables.
           </p>
         </div>
       </section>
 
       {/* Main Responsive Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter min-w-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0">
         
         {/* Left Column: NeonDB Configuration Panel */}
-        <div className="lg:col-span-5 min-w-0 flex flex-col gap-md">
+        <div className="lg:col-span-5 min-w-0 flex flex-col gap-6">
           
           {/* Connection Status Indicator */}
-          <div className="glass-panel rounded-2xl p-md md:p-lg space-y-md">
+          <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 space-y-6">
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-outline font-bold uppercase tracking-widest">Active Data Engine</span>
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase flex items-center gap-xs ${
+              <span className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase flex items-center gap-2 ${
                 dbStatus === "Connected" 
                   ? "bg-green-400/10 border border-green-400/25 text-green-400" 
                   : dbStatus === "Connecting" 
@@ -317,27 +318,27 @@ export default function DatasetsPage() {
               </span>
             </div>
 
-            <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-xs">
+            <div className="p-6 bg-surface-container rounded-xl border border-white/5 space-y-2">
               <span className="text-[9px] text-outline uppercase font-bold">NeonDB Cluster Url</span>
-              <p className="text-label-sm font-semibold text-secondary truncate mt-0.5">
+              <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold text-secondary truncate mt-0.5">
                 {dbUrl ? (showRawUrl ? dbUrl : maskedUrl) : "Sourcing local backup database (sturvixa.db)"}
               </p>
             </div>
           </div>
 
           {/* Configuration Form Panel */}
-          <div className="glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between">
-            <form onSubmit={handleSaveConfig} className="space-y-md flex flex-col h-full justify-between">
-              <div className="space-y-md">
-                <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
-                  <span className="material-symbols-outlined text-primary text-2xl">database</span>
+          <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex flex-col justify-between">
+            <form onSubmit={handleSaveConfig} className="space-y-6 flex flex-col h-full justify-between">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 border-b border-white/5 pb-sm">
+                  <Database className="w-5 h-5 text-primary text-2xl" />
                   <div>
-                    <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-headline-md">Database Connection</h3>
+                    <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-xl md:text-2xl font-bold tracking-tight">Database Connection</h3>
                     <p className="text-[10px] text-outline uppercase font-bold tracking-widest mt-1">Config Neon PostgreSQL variables</p>
                   </div>
                 </div>
 
-                <div className="space-y-xs relative">
+                <div className="space-y-2 relative">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] font-bold text-outline uppercase tracking-wider">Neon Connection URL</label>
                     <button 
@@ -354,25 +355,25 @@ export default function DatasetsPage() {
                     value={dbUrl}
                     onChange={(e) => setDbUrl(e.target.value)}
                     disabled={isTesting || isSaving}
-                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-label-sm text-on-surface font-mono outline-none rounded-t disabled:opacity-50"
+                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface font-mono outline-none rounded-t disabled:opacity-50"
                   />
                 </div>
               </div>
 
-              <div className="pt-md border-t border-white/5 space-y-sm mt-md">
-                <div className="flex gap-sm">
+              <div className="pt-md border-t border-white/5 space-y-4 mt-6">
+                <div className="flex gap-4">
                   <button 
                     type="button"
                     onClick={handleTestConnection}
                     disabled={isTesting || !dbUrl}
-                    className="flex-1 py-2 bg-surface-container-high hover:bg-white/5 border border-white/10 text-on-surface hover:text-primary rounded-xl text-label-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                    className="flex-1 py-2 bg-surface-container-high hover:bg-white/5 border border-white/10 text-on-surface hover:text-primary rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                   >
                     {isTesting ? "Testing..." : "Test Connection"}
                   </button>
                   <button 
                     type="submit"
                     disabled={isSaving || !dbUrl}
-                    className="flex-1 py-2 bg-gradient-to-r from-primary-container to-secondary-container hover:brightness-110 text-on-primary-container rounded-xl text-label-sm font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                    className="flex-1 py-2 bg-gradient-to-r from-primary-container to-secondary-container hover:brightness-110 text-on-primary-container rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save Connection"}
                   </button>
@@ -383,26 +384,26 @@ export default function DatasetsPage() {
         </div>
 
         {/* Right Column: Dataset File Ingestion Workspace */}
-        <div className="lg:col-span-7 min-w-0 flex flex-col gap-md">
+        <div className="lg:col-span-7 min-w-0 flex flex-col gap-6">
           
-          <div className="glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between">
-            <div className="space-y-md flex flex-col">
-              <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
-                <span className="material-symbols-outlined text-primary text-2xl">cloud_upload</span>
+          <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex flex-col justify-between">
+            <div className="space-y-6 flex flex-col">
+              <div className="flex items-center gap-4 border-b border-white/5 pb-sm">
+                <UploadCloud className="w-5 h-5 text-primary text-2xl" />
                 <div>
-                  <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-headline-md">Dataset File Ingestor</h3>
+                  <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-xl md:text-2xl font-bold tracking-tight">Dataset File Ingestor</h3>
                   <p className="text-[10px] text-outline uppercase font-bold tracking-widest mt-1">Upload records to active database</p>
                 </div>
               </div>
 
               {/* Ingestion Parameters Selection */}
-              <div className="grid grid-cols-2 gap-sm">
-                <div className="space-y-xs">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <label className="text-[10px] font-bold text-outline uppercase tracking-wider">Target Database Table</label>
                   <select 
                     value={targetTable}
                     onChange={(e) => setTargetTable(e.target.value as any)}
-                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-label-sm text-on-surface font-semibold outline-none rounded-t cursor-pointer"
+                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface font-semibold outline-none rounded-t cursor-pointer"
                   >
                     {tables.length > 0 ? (
                       tables.map(t => (
@@ -414,12 +415,12 @@ export default function DatasetsPage() {
                   </select>
                 </div>
 
-                <div className="space-y-xs">
+                <div className="space-y-2">
                   <label className="text-[10px] font-bold text-outline uppercase tracking-wider">Ingestion Mode</label>
                   <select 
                     value={ingestMode}
                     onChange={(e) => setIngestMode(e.target.value as any)}
-                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-label-sm text-on-surface font-semibold outline-none rounded-t cursor-pointer"
+                    className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary px-3 py-2 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface font-semibold outline-none rounded-t cursor-pointer"
                   >
                     <option value="overwrite">Overwrite (Clear & Ingest)</option>
                     <option value="append">Append (Add rows)</option>
@@ -433,7 +434,7 @@ export default function DatasetsPage() {
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                className={`flex-1 min-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-lg text-center transition-all mt-sm relative cursor-pointer ${
+                className={`flex-1 min-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-8 md:p-10 text-center transition-all mt-4 relative cursor-pointer ${
                   dragActive 
                     ? "border-primary bg-primary/5" 
                     : file 
@@ -448,20 +449,20 @@ export default function DatasetsPage() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
 
-                <span className={`material-symbols-outlined text-4xl mb-sm ${file ? "text-secondary" : "text-outline"}`}>
+                <span className={`material-symbols-outlined text-4xl mb-4 ${file ? "text-secondary" : "text-outline"}`}>
                   {file ? "description" : "upload_file"}
                 </span>
 
                 {file ? (
-                  <div className="space-y-xs max-w-[85%]">
-                    <p className="text-label-md font-bold text-on-surface truncate">{file.name}</p>
+                  <div className="space-y-2 max-w-[85%]">
+                    <p className="text-xs md:text-sm font-medium font-bold text-on-surface truncate">{file.name}</p>
                     <p className="text-[10px] text-outline font-mono">
                       Size: {(file.size / 1024).toFixed(1)} KB | Format: {file.name.split(".").pop()?.toUpperCase()}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-xs">
-                    <p className="text-label-sm font-bold text-on-surface">
+                  <div className="space-y-2">
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface">
                       Drag & drop dataset file here, or click to browse
                     </p>
                     <p className="text-[9px] text-outline font-semibold">
@@ -472,7 +473,7 @@ export default function DatasetsPage() {
               </div>
             </div>
 
-            <div className="pt-md border-t border-white/5 space-y-sm mt-md">
+            <div className="pt-md border-t border-white/5 space-y-4 mt-6">
               {isIngesting && ingestProgress < 100 && (
                 <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-xs">
                   <div 
@@ -485,7 +486,7 @@ export default function DatasetsPage() {
               <button 
                 onClick={handleIngest}
                 disabled={isIngesting || !file}
-                className="w-full py-2.5 bg-gradient-to-r from-primary-container to-secondary-container hover:brightness-110 text-on-primary-container rounded-xl text-label-sm font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 bg-gradient-to-r from-primary-container to-secondary-container hover:brightness-110 text-on-primary-container rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
                 {isIngesting ? "Ingesting Dataset..." : "Ingest Dataset File"}
               </button>
@@ -493,26 +494,26 @@ export default function DatasetsPage() {
           </div>
           
           {/* Consolidated Sales Pipeline (FMCG) ETL Panel */}
-          <div className="glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between">
-            <div className="space-y-md">
-              <div className="flex items-center gap-sm border-b border-white/5 pb-sm">
-                <span className="material-symbols-outlined text-secondary text-2xl">cached</span>
+          <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 border-b border-white/5 pb-sm">
+                <RefreshCw className="w-5 h-5 text-secondary text-2xl" />
                 <div>
-                  <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-headline-md">Consolidated Sales Pipeline (FMCG)</h3>
+                  <h3 className="font-extrabold text-on-surface tracking-tight leading-none text-xl md:text-2xl font-bold tracking-tight">Consolidated Sales Pipeline (FMCG)</h3>
                   <p className="text-[10px] text-outline uppercase font-bold tracking-widest mt-1">Clean and merge parent/child company data</p>
                 </div>
               </div>
 
-              <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-sm">
+              <div className="p-6 bg-surface-container rounded-xl border border-white/5 space-y-4">
                 <span className="text-[9px] text-outline uppercase font-bold">Consolidation Engine Details</span>
-                <p className="text-label-sm font-semibold text-on-surface-variant leading-relaxed">
+                <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold text-on-surface-variant leading-relaxed">
                   Executing this data pipeline runs a unified Python ETL workflow to import all transactions from parent and child companies.
                   It cleans spelling typos, resolves duplicate records, handles negative prices, forward-fills missing month values, and enforces relational constraints.
                 </p>
               </div>
             </div>
 
-            <div className="pt-md border-t border-white/5 space-y-sm mt-md">
+            <div className="pt-md border-t border-white/5 space-y-4 mt-6">
               {isRunningEtl && etlProgress < 100 && (
                 <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-xs">
                   <div 
@@ -525,7 +526,7 @@ export default function DatasetsPage() {
               <button 
                 onClick={handleRunEtl}
                 disabled={isRunningEtl}
-                className="w-full py-2.5 bg-gradient-to-r from-secondary-container to-primary-container hover:brightness-110 text-on-secondary-container rounded-xl text-label-sm font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 bg-gradient-to-r from-secondary-container to-primary-container hover:brightness-110 text-on-secondary-container rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-extrabold shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
                 {isRunningEtl ? "Executing ETL Pipeline..." : "Run ETL Data Pipeline"}
               </button>
@@ -537,13 +538,13 @@ export default function DatasetsPage() {
       </div>
 
       {/* Bottom Row: Schema Table Catalog & Logging Console */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 shrink-0">
         
         {/* Table Schema Catalog */}
         <div className="lg:col-span-6 glass-panel rounded-2xl flex flex-col min-h-[220px] max-h-[300px]">
-          <div className="p-md border-b border-white/5 flex justify-between items-center shrink-0">
+          <div className="p-6 border-b border-white/5 flex justify-between items-center shrink-0">
             <div>
-              <h3 className="font-extrabold text-label-md text-on-surface">Data Engine Schema Catalog</h3>
+              <h3 className="font-extrabold text-xs md:text-sm font-medium text-on-surface">Data Engine Schema Catalog</h3>
               <span className="text-[9px] text-outline font-semibold">Active database tables synced from database engine.</span>
             </div>
             <span className="text-[10px] text-primary uppercase font-bold">{tables.length} tables found</span>
@@ -551,15 +552,15 @@ export default function DatasetsPage() {
 
           <div className="overflow-y-auto divide-y divide-white/5 flex-1">
             {tables.map((table) => (
-              <div key={table.name} className="p-sm px-md flex items-center justify-between hover:bg-white/2 transition-colors">
-                <div className="space-y-xs min-w-0 flex-1">
-                  <div className="flex items-center gap-xs">
-                    <span className="material-symbols-outlined text-outline text-[16px]">table_rows</span>
-                    <span className="text-label-sm font-bold text-on-surface truncate">{table.name}</span>
+              <div key={table.name} className="p-4 px-md flex items-center justify-between hover:bg-white/2 transition-colors">
+                <div className="space-y-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Table className="w-5 h-5 text-outline text-[16px]" />
+                    <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface truncate">{table.name}</span>
                     <span className="text-[9px] text-outline/70">({table.size})</span>
                   </div>
                   
-                  <div className="flex flex-wrap gap-xs">
+                  <div className="flex flex-wrap gap-2">
                     {table.columns.slice(0, 5).map(c => (
                       <span key={c} className="text-[7px] font-semibold font-mono bg-white/5 border border-white/10 px-1 py-0.5 rounded text-outline-variant">
                         {c}
@@ -574,7 +575,7 @@ export default function DatasetsPage() {
                 </div>
 
                 <div className="text-right pl-md">
-                  <p className="text-label-sm font-extrabold text-on-surface">{table.records.toLocaleString()} rows</p>
+                  <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-extrabold text-on-surface">{table.records.toLocaleString()} rows</p>
                   <span className="text-[7px] font-extrabold uppercase inline-block text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1 rounded mt-xs">
                     {table.status}
                   </span>
@@ -585,12 +586,12 @@ export default function DatasetsPage() {
         </div>
 
         {/* Database Logging Terminal */}
-        <div className="lg:col-span-6 glass-panel rounded-2xl p-md flex flex-col min-h-[220px] max-h-[300px] relative">
+        <div className="lg:col-span-6 glass-panel rounded-2xl p-6 flex flex-col min-h-[220px] max-h-[300px] relative">
           <div className="crystalline absolute inset-0 rounded-2xl"></div>
           
           <div className="flex justify-between items-center pb-sm border-b border-white/5 text-outline shrink-0 relative z-10">
-            <div className="flex items-center gap-xs select-none">
-              <span className="material-symbols-outlined text-label-md text-primary animate-pulse">settings_ethernet</span>
+            <div className="flex items-center gap-2 select-none">
+              <Network className="w-5 h-5 text-xs md:text-sm font-medium text-primary animate-pulse" />
               <span className="text-[10px] font-bold uppercase tracking-wider">Database Syncer Ingress Engine</span>
             </div>
             <button 
@@ -602,7 +603,7 @@ export default function DatasetsPage() {
           </div>
 
           {/* Ingress logs console */}
-          <div className="flex-1 overflow-y-auto font-mono text-[11px] text-emerald-400 space-y-xs p-sm mt-sm bg-surface-container-lowest/80 rounded-xl border border-white/5 select-text select-all leading-normal relative z-10 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto font-mono text-[11px] text-emerald-400 space-y-2 p-4 mt-4 bg-surface-container-lowest/80 rounded-xl border border-white/5 select-text select-all leading-normal relative z-10 custom-scrollbar">
             {simulatedLogs.length === 0 ? (
               <div className="flex items-center justify-center h-full text-outline/40 select-none">
                 <span>Ingestion logs clear. Database configuration saves or file ingestion uploads will register here.</span>

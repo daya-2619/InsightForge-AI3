@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity, AlertOctagon, AlertTriangle, ArrowLeftRight, ArrowRight, Beaker, Bell, Brain, Calendar, Check, CheckCircle2, ChevronRight, Cloud, Compass, Copy, Cpu, CreditCard, Database, Eye, EyeOff, GitBranch, Globe, HardDrive, HelpCircle, Key, Layers, LayoutGrid, Loader2, LogIn, LogOut, Mail, Menu, MessageSquare, Mic, Network, Paperclip, PieChart, Play, Power, RefreshCw, Rocket, Search, Send, Server, Settings, ShieldCheck, Sliders, SlidersHorizontal, Sparkles, Star, Table, Terminal, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, X, Zap } from 'lucide-react';
 import { useState, useRef, useEffect } from "react";
 
 interface ChatMessage {
@@ -224,22 +225,22 @@ export default function CopilotPage() {
   };
 
   return (
-    <div className="space-y-lg flex-1 relative flex flex-col min-h-0 min-w-0 select-none">
+    <div className="space-y-8 flex-1 relative flex flex-col min-h-0 min-w-0 select-none">
       
       {/* Workspace Header Toolbar */}
-      <section className="min-h-12 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-sm px-xs pb-sm sm:pb-0 shrink-0 select-none">
-        <div className="flex items-center gap-sm overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-xs px-2 py-1 bg-surface-container-highest/40 rounded border border-white/5">
+      <section className="min-h-12 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-xs pb-sm sm:pb-0 shrink-0 select-none">
+        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 px-2 py-1 bg-surface-container-highest/40 rounded border border-white/5">
             <span className="text-[10px] text-outline font-bold">Workspace:</span>
             <span className="text-[10px] text-on-surface font-extrabold">Enterprise_Copilot_v3.2</span>
           </div>
           <div className="h-4 w-px bg-white/10"></div>
-          <span className="text-label-sm text-outline flex items-center gap-xs font-semibold">
+          <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline flex items-center gap-2 font-semibold">
             <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span> Copilot Interface Running
           </span>
         </div>
         
-        <div className="flex items-center gap-sm text-[10px] font-bold text-outline uppercase tracking-wider">
+        <div className="flex items-center gap-4 text-[10px] font-bold text-outline uppercase tracking-wider">
           <span className="hidden sm:inline">Active Session ID: </span>
           <span className="text-primary font-mono select-all">IF-AI-778X-Q</span>
         </div>
@@ -255,13 +256,13 @@ export default function CopilotPage() {
         </div>
 
         {/* Scrollable Message List */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-md custom-scrollbar relative z-10">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar relative z-10">
           {messages.map((msg) => {
             const isUser = msg.role === "user";
             return (
               <div
                 key={msg.id}
-                className={`flex min-w-0 gap-md w-full sm:max-w-[85%] ${
+                className={`flex min-w-0 gap-6 w-full sm:max-w-[85%] ${
                   isUser ? "ml-auto justify-end" : "mr-auto"
                 }`}
               >
@@ -278,18 +279,18 @@ export default function CopilotPage() {
                 )}
 
                 {/* Message Bubble Container */}
-                <div className="space-y-sm min-w-0 flex-1">
+                <div className="space-y-4 min-w-0 flex-1">
                   <div
                     className={`${
                       isUser
-                        ? "bg-surface-container-high rounded-2xl rounded-tr-none px-md py-sm border border-white/10 shadow-sm text-on-surface"
-                        : "glass-panel rounded-2xl p-md shadow-md text-on-surface border-white/5"
+                        ? "bg-surface-container-high rounded-2xl rounded-tr-none px-md py-3 border border-white/10 shadow-sm text-on-surface"
+                        : "glass-panel rounded-2xl p-6 shadow-md text-on-surface border-white/5"
                     }`}
                   >
                     {/* Header bar inside Assistant Bubble */}
                     {!isUser && (
-                      <div className="flex items-center justify-between mb-sm border-b border-white/5 pb-2 text-[10px] font-bold text-outline">
-                        <div className="flex items-center gap-xs">
+                      <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2 text-[10px] font-bold text-outline">
+                        <div className="flex items-center gap-2">
                           <span className="text-primary tracking-widest uppercase">INSIGHT SATELLITE</span>
                           <span className="w-1 h-1 rounded-full bg-primary animate-pulse"></span>
                         </div>
@@ -300,28 +301,28 @@ export default function CopilotPage() {
                     )}
 
                     {/* Text Message Content */}
-                    <p className="text-label-md text-on-surface leading-relaxed whitespace-pre-wrap select-text font-semibold">
+                    <p className="text-xs md:text-sm font-medium text-on-surface leading-relaxed whitespace-pre-wrap select-text font-semibold">
                       {formatContent(msg.content)}
                     </p>
 
                     {/* Rich SQL Pane Overlay */}
                     {!isUser && msg.sql && (
-                      <div className="mt-md space-y-xs">
+                      <div className="mt-6 space-y-2">
                         <div className="flex items-center justify-between text-[10px] font-bold text-secondary uppercase tracking-widest px-xs">
-                          <span className="flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-label-sm">database</span>
+                          <span className="flex items-center gap-2">
+                            <Database className="w-5 h-5 text-[10px] md:text-xs font-semibold tracking-wider uppercase" />
                             SQL query executed
                           </span>
                           <button
                             onClick={() => copyToClipboard(msg.sql || "", msg.id)}
-                            className="hover:text-primary transition-colors flex items-center gap-xs cursor-pointer py-0.5 px-2 bg-white/5 rounded border border-white/10"
+                            className="hover:text-primary transition-colors flex items-center gap-2 cursor-pointer py-0.5 px-2 bg-white/5 rounded border border-white/10"
                           >
-                            <span className="material-symbols-outlined text-[12px]">content_copy</span>
+                            <Copy className="w-5 h-5 text-[12px]" />
                             {copiedId === msg.id ? "Copied!" : "Copy SQL"}
                           </button>
                         </div>
                         
-                        <div className="bg-surface-container-lowest border border-white/5 rounded-xl p-md font-mono text-label-sm text-on-surface-variant overflow-x-auto whitespace-pre select-all select-text shadow-inner">
+                        <div className="bg-surface-container-lowest border border-white/5 rounded-xl p-6 font-mono text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface-variant overflow-x-auto whitespace-pre select-all select-text shadow-inner">
                           {/* Basic SQL coloring simulation */}
                           {msg.sql.split(/(\s+)/).map((word, wIdx) => {
                             const upperWord = word.toUpperCase();
@@ -344,25 +345,25 @@ export default function CopilotPage() {
 
                     {/* Rich Metrics Cards Overlay */}
                     {!isUser && msg.metrics && (
-                      <div className="mt-md grid grid-cols-1 sm:grid-cols-2 gap-sm">
+                      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {msg.metrics.map((met, mIdx) => (
                           <div
                             key={mIdx}
-                            className="p-md bg-surface-container/60 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-sm"
+                            className="p-6 bg-surface-container/60 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-sm"
                           >
                             <span className="text-[10px] text-outline font-bold uppercase tracking-wider block">
                               {met.label}
                             </span>
-                            <span className="text-headline-md font-extrabold text-on-surface mt-xs block">
+                            <span className="text-xl md:text-2xl font-bold tracking-tight font-extrabold text-on-surface mt-xs block">
                               {met.value}
                             </span>
-                            <span className="text-[10px] text-outline font-semibold block mt-0.5 flex items-center gap-xs">
+                            <span className="text-[10px] text-outline font-semibold block mt-0.5 flex items-center gap-2">
                               {met.sub.includes("+") || met.sub.includes("18%") ? (
-                                <span className="material-symbols-outlined text-green-400 text-[12px] font-bold">trending_up</span>
+                                <TrendingUp className="w-5 h-5 text-green-400 text-[12px] font-bold" />
                               ) : met.sub.includes("-") || met.sub.includes("churn") ? (
-                                <span className="material-symbols-outlined text-red-400 text-[12px] font-bold">trending_down</span>
+                                <TrendingDown className="w-5 h-5 text-red-400 text-[12px] font-bold" />
                               ) : (
-                                <span className="material-symbols-outlined text-primary text-[12px] font-bold">info</span>
+                                <HelpCircle className="w-5 h-5 text-primary text-[12px] font-bold" />
                               )}
                               {met.sub}
                             </span>
@@ -373,8 +374,8 @@ export default function CopilotPage() {
 
                     {/* Dynamic Responsive SVG Custom Chart */}
                     {!isUser && msg.chart && (
-                      <div className="mt-md p-md bg-surface-container-lowest/50 rounded-xl border border-white/5 flex flex-col shadow-sm">
-                        <div className="flex justify-between items-center mb-sm border-b border-white/5 pb-2">
+                      <div className="mt-6 p-6 bg-surface-container-lowest/50 rounded-xl border border-white/5 flex flex-col shadow-sm">
+                        <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
                           <span className="text-[10px] text-outline font-bold uppercase tracking-wider">
                             {msg.chart.title}
                           </span>
@@ -388,7 +389,7 @@ export default function CopilotPage() {
                           {msg.chart.type === "bar" ? (
                             <div className="w-full h-full flex flex-col justify-between">
                               {/* Horizontal Bar Chart representation */}
-                              <div className="space-y-sm flex-1 flex flex-col justify-center">
+                              <div className="space-y-4 flex-1 flex flex-col justify-center">
                                 {msg.chart.labels.map((lbl, lIdx) => {
                                   const val = msg.chart?.values[lIdx] || 0;
                                   // Find maximum value to normalize width percentage
@@ -396,7 +397,7 @@ export default function CopilotPage() {
                                   const percentWidth = (val / maxVal) * 80; // keep some right padding
                                   
                                   return (
-                                    <div key={lIdx} className="space-y-xs">
+                                    <div key={lIdx} className="space-y-2">
                                       <div className="flex justify-between text-[10px] font-bold text-outline-variant">
                                         <span className="text-on-surface-variant">{lbl}</span>
                                         <span className="text-primary">{val}</span>
@@ -466,13 +467,13 @@ export default function CopilotPage() {
                               </svg>
 
                               {/* Doughnut Legends list */}
-                              <div className="flex flex-col gap-xs text-[10px] font-bold text-outline">
+                              <div className="flex flex-col gap-2 text-[10px] font-bold text-outline">
                                 {msg.chart.labels.map((lbl, lIdx) => {
                                   const val = msg.chart?.values[lIdx] || 0;
                                   const colors = ["bg-primary", "bg-secondary", "bg-tertiary", "bg-error"];
                                   
                                   return (
-                                    <div key={lIdx} className="flex items-center gap-sm">
+                                    <div key={lIdx} className="flex items-center gap-4">
                                       <span className={`w-2.5 h-2.5 rounded-full ${colors[lIdx % colors.length]}`}></span>
                                       <span className="text-on-surface-variant min-w-[90px]">{lbl}</span>
                                       <span className="font-mono text-outline">{val}%</span>
@@ -489,7 +490,7 @@ export default function CopilotPage() {
 
                   {/* Message timestamp metadata */}
                   <div
-                    className={`text-[9px] font-bold text-outline px-xs flex items-center gap-xs ${
+                    className={`text-[9px] font-bold text-outline px-xs flex items-center gap-2 ${
                       isUser ? "justify-end" : "justify-start"
                     }`}
                   >
@@ -504,21 +505,21 @@ export default function CopilotPage() {
 
           {/* AI Analyzing / loading indicator */}
           {loading && (
-            <div className="flex gap-md max-w-[85%] mr-auto items-start">
+            <div className="flex gap-6 max-w-[85%] mr-auto items-start">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 animate-pulse">
                 <span className="material-symbols-outlined text-[#13121b] text-[20px] animate-spin">
                   sync
                 </span>
               </div>
               
-              <div className="glass-panel rounded-2xl p-md shadow-md border-white/5 space-y-sm flex-1 w-full sm:w-[400px] overflow-hidden">
-                <div className="flex items-center gap-xs text-[10px] font-bold text-primary">
+              <div className="glass-panel rounded-2xl p-6 shadow-md border-white/5 space-y-4 flex-1 w-full sm:w-[400px] overflow-hidden">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-primary">
                   <span className="tracking-widest uppercase">ANALYZING PRIMARY TELEMETRY</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
                 </div>
                 
                 {/* Shimmer loading blocks */}
-                <div className="space-y-sm pt-xs">
+                <div className="space-y-4 pt-xs">
                   <div className="h-3 w-[90%] bg-white/5 rounded animate-pulse"></div>
                   <div className="h-3 w-[75%] bg-white/5 rounded animate-pulse"></div>
                   <div className="h-3 w-[60%] bg-white/5 rounded animate-pulse"></div>
@@ -531,15 +532,15 @@ export default function CopilotPage() {
         </div>
 
         {/* Input pills & Suggestion Chips Container */}
-        <div className="mt-md border-t border-white/5 pt-md relative z-10">
+        <div className="mt-6 border-t border-white/5 pt-md relative z-10">
           
           {/* Suggestion Chips */}
-          <div className="flex gap-sm mb-md overflow-x-auto pb-2 custom-scrollbar no-scrollbar select-none">
+          <div className="flex gap-4 mb-6 overflow-x-auto pb-2 custom-scrollbar no-scrollbar select-none">
             {suggestionChips.map((chip, cIdx) => (
               <button
                 key={cIdx}
                 onClick={() => handleSend(chip)}
-                className="px-md py-xs bg-surface-container rounded-full border border-white/10 text-label-sm font-bold text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all whitespace-nowrap active:scale-95 cursor-pointer"
+                className="px-md py-xs bg-surface-container rounded-full border border-white/10 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all whitespace-nowrap active:scale-95 cursor-pointer"
               >
                 {chip}
               </button>
@@ -552,25 +553,25 @@ export default function CopilotPage() {
               e.preventDefault();
               handleSend(inputValue);
             }}
-            className="glass-panel rounded-full p-1 pl-md flex min-w-0 items-center gap-sm shadow-xl focus-within:border-primary/40 focus-within:shadow-[0_0_20px_rgba(195,192,255,0.15)] transition-all bg-surface-container-lowest/80 border-white/10"
+            className="glass-panel rounded-full p-1 pl-md flex min-w-0 items-center gap-4 shadow-xl focus-within:border-primary/40 focus-within:shadow-[0_0_20px_rgba(195,192,255,0.15)] transition-all bg-surface-container-lowest/80 border-white/10"
           >
-            <span className="material-symbols-outlined text-outline select-none">attachment</span>
+            <Paperclip className="w-5 h-5 text-outline select-none" />
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Sturvixa AI anything..."
-              className="min-w-0 flex-1 bg-transparent border-none text-body-md text-on-surface placeholder:text-outline/40 h-10 outline-none focus:ring-0 focus:border-transparent select-text font-medium"
+              className="min-w-0 flex-1 bg-transparent border-none text-sm md:text-base text-zinc-400 font-normal text-on-surface placeholder:text-outline/40 h-10 outline-none focus:ring-0 focus:border-transparent select-text font-medium"
             />
             
-            <div className="flex items-center gap-sm pr-1">
+            <div className="flex items-center gap-4 pr-1">
               <button
                 type="button"
                 onClick={() => alert("Voice input module is in demonstration standby mode.")}
                 className="p-base rounded-full text-outline hover:text-secondary transition-colors cursor-pointer"
                 title="Voice dictation input"
               >
-                <span className="material-symbols-outlined">mic</span>
+                <Mic  />
               </button>
               
               <button
@@ -578,12 +579,12 @@ export default function CopilotPage() {
                 className="h-9 w-9 bg-gradient-to-br from-primary to-primary-container text-[#1d00a5] rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md relative overflow-hidden group cursor-pointer"
                 title="Send query"
               >
-                <span className="material-symbols-outlined text-body-md font-bold text-[#1d00a5] group-hover:translate-x-0.5 transition-transform">send</span>
+                <Send className="w-5 h-5 text-sm md:text-base text-zinc-400 font-normal font-bold text-[#1d00a5] group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </form>
 
-          <p className="text-center text-[9px] font-semibold text-outline mt-sm select-none">
+          <p className="text-center text-[9px] font-semibold text-outline mt-4 select-none">
             Sturvixa AI Copilot is operating under secure enterprise SLA compliance sandbox guidelines.
           </p>
         </div>

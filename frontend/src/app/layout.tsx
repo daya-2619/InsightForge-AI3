@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "Sturvixa AI | Visionary Reliability",
@@ -21,7 +22,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col bg-[#13121b] text-[#e4e1ee]">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -410,6 +410,8 @@ def run_etl_pipeline(db: Session, base_data_dir: str):
                     company="parent"
                 ))
                 parent_inc_count += 1
+                if parent_inc_count % 10000 == 0:
+                    db.commit()
         log(f"Loaded {parent_inc_count} incremental orders from parent company.")
     else:
         log("Warning: Parent company incremental fact_orders.csv not found.")
@@ -463,6 +465,8 @@ def run_etl_pipeline(db: Session, base_data_dir: str):
                     ))
                     seen_child_orders.add(order_key)
                     child_orders_count += 1
+                    if child_orders_count % 10000 == 0:
+                        db.commit()
         log(f"Loaded {child_orders_count} full load orders from child company.")
     else:
         log("Warning: Child company full load orders landing files not found.")
@@ -511,6 +515,8 @@ def run_etl_pipeline(db: Session, base_data_dir: str):
                     ))
                     seen_child_orders.add(order_key)
                     child_inc_count += 1
+                    if child_inc_count % 10000 == 0:
+                        db.commit()
         log(f"Loaded {child_inc_count} incremental load orders from child company.")
     else:
         log("Warning: Child company incremental orders files not found.")

@@ -15,8 +15,14 @@ load_dotenv(backend_env_path, override=True)
 from database import get_db, init_db, KPIRecord, ExecutionLog, Activity, DimCustomer, DimProduct, DimGrossPrice, FactOrder
 from ingestion_service import parse_uploaded_file, validate_and_convert_records, ingest_data
 from etl_pipeline import run_etl_pipeline
-from fastapi import File, UploadFile, Form
+from fastapi import File, UploadFile, Form, WebSocket, WebSocketDisconnect
 from sqlalchemy import create_engine, text
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
+from redis import asyncio as aioredis
+import asyncio
+from worker import run_etl_background_task
 
 app = FastAPI(title="Sturvixa AI API", version="1.0.0")
 
@@ -31,10 +37,32 @@ app.add_middleware(
 
 # Startup DB initialization
 @app.on_event("startup")
-def startup_event():
+async def startup_event():
+    # Initialize Redis caching
+    redis = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+
     db_url = os.getenv("DATABASE_URL", "")
     if not db_url or db_url.startswith("sqlite"):
         init_db()
+
+@app.websocket("/ws/telemetry")
+async def websocket_telemetry(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        import random
+        while True:
+            # Mock telemetry
+            data = {
+                "cpu": random.randint(20, 80),
+                "ram": random.randint(40, 90),
+                "latency": random.randint(10, 150),
+                "active_requests": random.randint(50, 500)
+            }
+            await websocket.send_json(data)
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        print("Telemetry client disconnected")
 
 # Pydantic schemas
 class ChatMessage(BaseModel):
@@ -45,12 +73,19 @@ class ChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
 
+class SimulationRequest(BaseModel):
+    child_qty_mult: float = 1.0
+    child_price_mult: float = 1.0
+    parent_qty_mult: float = 1.0
+    parent_price_mult: float = 1.0
+
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy", "database": os.getenv("DATABASE_URL", "SQLite Local Fallback")}
 
 @app.get("/api/dashboard-stats")
-def get_dashboard_stats(
+@cache(expire=300)
+async def get_dashboard_stats(
     region: str = Query("Global", description="Filter by region (Global, North America, Europe, APAC)"),
     days: int = Query(30, description="Filter by time period (30, 90, 365)"),
     db: Session = Depends(get_db)
@@ -87,72 +122,6 @@ def get_dashboard_stats(
         profit = float(row[1] or 0.0)
         users = int(row[2] or 0)
         return revenue, profit, users
-
-    # Check if consolidated sales database has records
-    has_consolidated_data = False
-    try:
-        has_consolidated_data = db.query(FactOrder).first() is not None
-    except Exception:
-        pass
-
-    if not has_consolidated_data:
-        try:
-            # Fetch KPI record
-            kpi = db.query(KPIRecord).filter(
-                KPIRecord.region == region,
-                KPIRecord.days == days
-            ).first()
-            
-            if not kpi:
-                # Fallback to Global 30 days if not found
-                kpi = db.query(KPIRecord).filter(
-                    KPIRecord.region == "Global",
-                    KPIRecord.days == 30
-                ).first()
-
-            # Fetch recent activities
-            activities = db.query(Activity).order_by(Activity.id.desc()).all()
-            
-            # Parse JSON values
-            try:
-                chart_data = json.loads(kpi.revenue_chart_data) if kpi else {"actual": [0], "forecast": [0]}
-                region_data = json.loads(kpi.region_data) if kpi else {}
-            except Exception:
-                chart_data = {"actual": [0], "forecast": [0]}
-                region_data = {}
-
-            return {
-                "region": kpi.region if kpi else region,
-                "days": kpi.days if kpi else days,
-                "total_revenue": kpi.total_revenue if kpi else "₹0.00",
-                "revenue_growth": kpi.revenue_growth if kpi else "0.0%",
-                "net_profit": kpi.net_profit if kpi else "₹0.00",
-                "profit_growth": kpi.profit_growth if kpi else "0.0%",
-                "active_users": kpi.active_users if kpi else "0",
-                "user_growth": kpi.user_growth if kpi else "0.0%",
-                "growth_rate": kpi.growth_rate if kpi else "0.0%",
-                "growth_change": kpi.growth_change if kpi else "0.0%",
-                "chart_data": chart_data,
-                "region_data": region_data,
-                "recent_activities": [
-                    {
-                        "id": act.id,
-                        "entity_name": act.entity_name,
-                        "tier": act.tier,
-                        "status": act.status,
-                        "value": act.value,
-                        "confidence": act.confidence
-                    }
-                    for act in activities
-                ]
-            }
-        except Exception:
-            return {
-                "region": region, "days": days, "total_revenue": "₹0.00", "revenue_growth": "0.0%",
-                "net_profit": "₹0.00", "profit_growth": "0.0%", "active_users": "0", "user_growth": "0.0%",
-                "growth_rate": "0.0%", "growth_change": "0.0%", "chart_data": {"actual": [0]*7, "forecast": [0]*7},
-                "region_data": {}, "recent_activities": []
-            }
 
     # Dynamic calculation using consolidated sales tables!
     try:
@@ -549,6 +518,132 @@ def initiate_diagnose(db: Session = Depends(get_db)):
         }
     }
 
+@app.post("/api/simulate")
+def run_simulation(req: SimulationRequest, db: Session = Depends(get_db)):
+    has_consolidated_data = False
+    try:
+        has_consolidated_data = db.query(FactOrder).first() is not None
+    except Exception:
+        pass
+
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    
+    # Defaults/Mocks
+    parent_baseline = [1200000.0, 1250000.0, 1300000.0, 1350000.0, 1400000.0, 1450000.0, 1500000.0, 1550000.0, 1600000.0, 1650000.0, 1700000.0, 1800000.0]
+    child_baseline = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 400000.0, 450000.0, 500000.0, 550000.0, 600000.0, 650000.0]
+    
+    if has_consolidated_data:
+        try:
+            sql = """
+                SELECT 
+                    CAST(SUBSTR(fo.date, 6, 2) AS INTEGER) AS m,
+                    SUM(CASE WHEN fo.company = 'parent' THEN fo.sold_quantity * gp.price ELSE 0 END) AS parent_rev,
+                    SUM(CASE WHEN fo.company = 'child' THEN fo.sold_quantity * gp.price ELSE 0 END) AS child_rev
+                FROM fact_orders fo
+                JOIN dim_gross_prices gp ON fo.product_code = gp.product_code AND fo.company = gp.company
+                WHERE 
+                    fo.date >= '2025-01-01' AND fo.date <= '2025-12-31'
+                    AND gp.year = CAST(SUBSTR(fo.date, 1, 4) AS INTEGER)
+                    AND (
+                        (fo.company = 'parent' AND gp.month IS NULL)
+                        OR 
+                        (fo.company = 'child' AND gp.month = CAST(SUBSTR(fo.date, 6, 2) AS INTEGER))
+                    )
+                GROUP BY m
+                ORDER BY m;
+            """
+            rows = db.execute(text(sql)).fetchall()
+            if rows:
+                parent_baseline = [0.0] * 12
+                child_baseline = [0.0] * 12
+                for r in rows:
+                    m_idx = int(r[0]) - 1
+                    if 0 <= m_idx < 12:
+                        parent_baseline[m_idx] = float(r[1] or 0.0)
+                        child_baseline[m_idx] = float(r[2] or 0.0)
+        except Exception as e:
+            print(f"Error querying simulation data, using baseline: {str(e)}")
+
+    baseline_monthly = []
+    simulated_monthly = []
+    
+    total_baseline_rev = 0.0
+    total_simulated_rev = 0.0
+    total_baseline_profit = 0.0
+    total_simulated_profit = 0.0
+
+    for i in range(12):
+        p_base = parent_baseline[i]
+        c_base = child_baseline[i]
+        
+        # Apply multipliers
+        p_sim = p_base * req.parent_qty_mult * req.parent_price_mult
+        c_sim = c_base * req.child_qty_mult * req.child_price_mult
+        
+        base_rev = p_base + c_base
+        sim_rev = p_sim + c_sim
+        
+        # Profit margins: parent = 10%, child = 15%
+        base_prof = (p_base * 0.10) + (c_base * 0.15)
+        sim_prof = (p_sim * 0.10) + (c_sim * 0.15)
+        
+        baseline_monthly.append(round(base_rev, 2))
+        simulated_monthly.append(round(sim_rev, 2))
+        
+        total_baseline_rev += base_rev
+        total_simulated_rev += sim_rev
+        total_baseline_profit += base_prof
+        total_simulated_profit += sim_prof
+
+    rev_diff = total_simulated_rev - total_baseline_rev
+    rev_diff_pct = (rev_diff / total_baseline_rev * 100) if total_baseline_rev > 0 else 0.0
+    
+    profit_diff = total_simulated_profit - total_baseline_profit
+    profit_diff_pct = (profit_diff / total_baseline_profit * 100) if total_baseline_profit > 0 else 0.0
+
+    # Determine status/alert recommendations based on scenario results
+    severity = "Info"
+    status_msg = "Scenario exhibits stable operational growth."
+    
+    if rev_diff_pct < -5.0:
+        severity = "High"
+        status_msg = "Warning: Proposed price cuts or volume reduction causes significant revenue compression."
+    elif rev_diff_pct > 15.0:
+        severity = "Optimal"
+        status_msg = "Success: High-impact strategy. Segments show strong synergized growth vectors."
+    elif rev_diff_pct > 0.0:
+        severity = "Moderate"
+        status_msg = "Scenario shows moderate margin expansion."
+
+    return {
+        "status": "success",
+        "parameters": {
+            "child_qty_mult": req.child_qty_mult,
+            "child_price_mult": req.child_price_mult,
+            "parent_qty_mult": req.parent_qty_mult,
+            "parent_price_mult": req.parent_price_mult
+        },
+        "summary": {
+            "baseline_revenue": total_baseline_rev,
+            "simulated_revenue": total_simulated_rev,
+            "revenue_diff": rev_diff,
+            "revenue_diff_percent": round(rev_diff_pct, 1),
+            "baseline_profit": total_baseline_profit,
+            "simulated_profit": total_simulated_profit,
+            "profit_diff": profit_diff,
+            "profit_diff_percent": round(profit_diff_pct, 1)
+        },
+        "charts": {
+            "labels": months,
+            "baseline": baseline_monthly,
+            "simulated": simulated_monthly
+        },
+        "verdict": {
+            "severity": severity,
+            "message": status_msg
+        }
+    }
+
 @app.post("/api/chat")
 def chat_copilot(request: ChatRequest, db: Session = Depends(get_db)):
     msg = request.message.strip().lower()
@@ -889,12 +984,9 @@ def get_tables_stats():
 @app.post("/api/neondb/run-etl")
 def trigger_etl_pipeline(db: Session = Depends(get_db)):
     try:
-        # Find base data directory
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        data_dir = os.path.join(base_dir, "data")
-        
-        result = run_etl_pipeline(db, data_dir)
-        return result
+        # Dispatch to celery worker
+        task = run_etl_background_task.delay()
+        return {"status": "processing", "task_id": task.id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ETL pipeline run failed: {str(e)}")
 

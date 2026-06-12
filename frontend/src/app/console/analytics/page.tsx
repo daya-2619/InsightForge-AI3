@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity, AlertOctagon, AlertTriangle, ArrowLeftRight, ArrowRight, Beaker, Bell, Brain, Calendar, Check, CheckCircle2, ChevronRight, Cloud, Compass, Copy, Cpu, CreditCard, Database, Eye, EyeOff, GitBranch, Globe, HardDrive, HelpCircle, Key, Layers, LayoutGrid, Loader2, LogIn, LogOut, Mail, Menu, MessageSquare, Mic, Network, Paperclip, PieChart, Play, Power, RefreshCw, Rocket, Search, Send, Server, Settings, ShieldCheck, Sliders, SlidersHorizontal, Sparkles, Star, Terminal, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, X, Zap } from 'lucide-react';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +35,53 @@ export default function AnalyticsPage() {
   const [isDiagnosing, setIsDiagnosing] = useState(false);
   const [scanSteps, setScanSteps] = useState<string[]>([]);
   const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
+
+  // Scenario Simulation states
+  const [childQtyMult, setChildQtyMult] = useState(1.0);
+  const [childPriceMult, setChildPriceMult] = useState(1.0);
+  const [parentQtyMult, setParentQtyMult] = useState(1.0);
+  const [parentPriceMult, setParentPriceMult] = useState(1.0);
+  const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [loadingSimulation, setLoadingSimulation] = useState(false);
+
+  // Live Telemetry states
+  const [telemetry, setTelemetry] = useState({ cpu: 0, ram: 0, latency: 0, active_requests: 0 });
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://127.0.0.1:8000/ws/telemetry");
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setTelemetry(data);
+    };
+    return () => ws.close();
+  }, []);
+  const fetchSimulation = async (cq: number, cp: number, pq: number, pp: number) => {
+    setLoadingSimulation(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          child_qty_mult: cq,
+          child_price_mult: cp,
+          parent_qty_mult: pq,
+          parent_price_mult: pp
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSimulationResult(data);
+      }
+    } catch (err) {
+      console.warn("Failed to retrieve live simulation results.");
+    } finally {
+      setLoadingSimulation(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSimulation(childQtyMult, childPriceMult, parentQtyMult, parentPriceMult);
+  }, [childQtyMult, childPriceMult, parentQtyMult, parentPriceMult]);
 
   // Fetch execution logs from FastAPI backend
   const fetchLogs = async (search: string, status: string) => {
@@ -176,22 +224,22 @@ export default function AnalyticsPage() {
   const diffSign = parseFloat(accuracyDiff) >= 0 ? "+" : "";
 
   return (
-    <div className="space-y-lg relative flex flex-col min-w-0">
+    <div className="space-y-8 relative flex flex-col min-w-0">
       
       {/* Workspace Toolbar */}
-      <section className="min-h-12 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-sm px-xs pb-sm sm:pb-0 shrink-0 select-none">
-        <div className="flex items-center gap-sm overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-xs px-2 py-1 bg-surface-container-highest/40 rounded border border-white/5">
+      <section className="min-h-12 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-xs pb-sm sm:pb-0 shrink-0 select-none">
+        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 px-2 py-1 bg-surface-container-highest/40 rounded border border-white/5">
             <span className="text-[10px] text-outline font-bold">Workspace:</span>
             <span className="text-[10px] text-on-surface font-extrabold">Enterprise_Telemetry</span>
           </div>
           <div className="h-4 w-px bg-white/10"></div>
-          <span className="text-label-sm text-outline flex items-center gap-xs font-semibold">
+          <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline flex items-center gap-2 font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Live Node Streams
           </span>
         </div>
         
-        <div className="flex shrink-0 items-center gap-sm">
+        <div className="flex shrink-0 items-center gap-4">
           <div className="flex items-center bg-surface-container-low rounded-lg p-0.5 border border-white/5 select-none text-[11px] font-bold">
             <button 
               onClick={() => setViewMode("layout")}
@@ -214,19 +262,66 @@ export default function AnalyticsPage() {
       </section>
 
       {/* Main Content viewport */}
-      <div className="space-y-md pr-1">
+      <div className="space-y-6 pr-1">
         
         {viewMode === "layout" ? (
           <>
             {/* Bento Grid Top Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-md items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-6">
+              
+              {/* Live Server Telemetry Widget */}
+              <div className="col-span-1 lg:col-span-12 glass-panel rounded-2xl p-6 md:p-8 shrink-0 flex flex-col relative overflow-hidden group border border-primary/20">
+                <div className="absolute top-0 right-0 p-4 opacity-5 flex gap-2 pointer-events-none">
+                  <Server className="w-48 h-48 text-primary" />
+                </div>
+                
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                  <div className="p-2 bg-primary/20 text-primary rounded-lg shadow-[0_0_15px_rgba(var(--primary-color),0.3)]">
+                    <Activity className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <h3 className="text-xl font-bold text-on-surface tracking-tight">Live Server Telemetry</h3>
+                  <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/25 text-green-400 text-[9px] font-bold rounded uppercase tracking-wider ml-auto">
+                    Connected
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                  <div className="bg-surface-container-low border border-white/5 p-4 rounded-xl shadow-lg">
+                    <p className="text-[10px] text-outline font-bold uppercase tracking-wider mb-1">CPU Load</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl lg:text-3xl font-extrabold text-on-surface font-mono">{telemetry.cpu}%</span>
+                    </div>
+                  </div>
+                  <div className="bg-surface-container-low border border-white/5 p-4 rounded-xl shadow-lg">
+                    <p className="text-[10px] text-outline font-bold uppercase tracking-wider mb-1">Memory</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl lg:text-3xl font-extrabold text-on-surface font-mono">{telemetry.ram}%</span>
+                    </div>
+                  </div>
+                  <div className="bg-surface-container-low border border-white/5 p-4 rounded-xl shadow-lg">
+                    <p className="text-[10px] text-outline font-bold uppercase tracking-wider mb-1">Latency</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl lg:text-3xl font-extrabold text-on-surface font-mono">{telemetry.latency}ms</span>
+                    </div>
+                  </div>
+                  <div className="bg-surface-container-low border border-white/5 p-4 rounded-xl shadow-lg">
+                    <p className="text-[10px] text-outline font-bold uppercase tracking-wider mb-1">Active Requests</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl lg:text-3xl font-extrabold text-on-surface font-mono">{telemetry.active_requests}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               
               {/* Intelligence Velocity (Inferences) */}
-              <div className="lg:col-span-8 glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between min-h-[300px]">
-                <div className="flex justify-between items-start mb-md">
+              <div className="lg:col-span-8 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex flex-col justify-between min-h-[300px]">
+                <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-xl font-bold text-on-surface tracking-tight">Intelligence Velocity</h3>
-                    <p className="text-label-sm text-outline font-semibold">Real-time inference performance across node environments</p>
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-semibold">Real-time inference performance across node environments</p>
                   </div>
                   <div className="flex gap-2">
                     <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/25 text-green-400 text-[9px] font-bold rounded uppercase tracking-wider">
@@ -249,7 +344,7 @@ export default function AnalyticsPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-between mt-md pt-md border-t border-white/5 text-[10px] font-bold text-outline uppercase tracking-wider">
+                <div className="flex justify-between mt-6 pt-md border-t border-white/5 text-[10px] font-bold text-outline uppercase tracking-wider">
                   <span>00:00 UTC</span>
                   <span>06:00 UTC</span>
                   <span>12:00 UTC</span>
@@ -259,15 +354,15 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Anomaly Detected Card (Pulsing Alarm) */}
-              <div className="lg:col-span-4 glass-panel rounded-2xl p-md md:p-lg flex flex-col justify-between border-error/20 bg-error-container/5 relative overflow-hidden">
+              <div className="lg:col-span-4 glass-panel rounded-2xl p-6 md:p-8 md:p-10 flex flex-col justify-between border-error/20 bg-error-container/5 relative overflow-hidden">
                 
                 {/* Alarm Pulsing Glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-error/5 to-transparent pointer-events-none animate-pulse"></div>
                 
-                <div className="relative z-10 space-y-md">
-                  <div className="flex items-center gap-sm">
+                <div className="relative z-10 space-y-6">
+                  <div className="flex items-center gap-4">
                     <div className="w-9 h-9 rounded-full bg-error/20 flex items-center justify-center text-error border border-error/30 animate-pulse">
-                      <span className="material-symbols-outlined text-body-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      <span className="material-symbols-outlined text-base md:text-lg text-zinc-400 font-normal" style={{ fontVariationSettings: "'FILL' 1" }}>
                         warning
                       </span>
                     </div>
@@ -277,19 +372,19 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-sm">
-                    <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-xs">
+                  <div className="space-y-4">
+                    <div className="p-6 bg-surface-container rounded-xl border border-white/5 space-y-2">
                       <span className="text-[9px] text-outline uppercase font-bold">Metric Deviation</span>
-                      <p className="text-label-md font-bold text-on-surface">Cyclic Variance &gt; 14.2%</p>
+                      <p className="text-xs md:text-sm font-medium font-bold text-on-surface">Cyclic Variance &gt; 14.2%</p>
                     </div>
                     
-                    <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-xs">
+                    <div className="p-6 bg-surface-container rounded-xl border border-white/5 space-y-2">
                       <span className="text-[9px] text-outline uppercase font-bold">Severity Probability</span>
-                      <div className="flex items-center justify-between gap-sm mt-1">
+                      <div className="flex items-center justify-between gap-4 mt-1">
                         <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
                           <div className="h-full bg-error w-[92.4%] shadow-[0_0_8px_rgba(255,180,171,0.5)]"></div>
                         </div>
-                        <span className="text-label-sm font-extrabold text-error">92.4%</span>
+                        <span className="text-[10px] md:text-xs font-semibold tracking-wider uppercase font-extrabold text-error">92.4%</span>
                       </div>
                     </div>
                   </div>
@@ -297,10 +392,219 @@ export default function AnalyticsPage() {
 
                 <button 
                   onClick={handleInitiateDiagnose}
-                  className="w-full py-2.5 mt-md bg-error/10 hover:bg-error/20 border border-error/30 text-error rounded-xl text-label-sm font-bold transition-all relative z-10 active:scale-[0.98]"
+                  className="w-full py-2.5 mt-6 bg-error/10 hover:bg-error/20 border border-error/30 text-error rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold transition-all relative z-10 active:scale-[0.98]"
                 >
                   Initiate Root Cause Analysis
                 </button>
+
+              </div>
+
+            </div>
+
+            {/* Scenario Simulation Sandbox Panel */}
+            <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 space-y-6 border-primary/10">
+              <div className="flex justify-between items-center border-b border-white/5 pb-sm">
+                <div className="flex items-center gap-4">
+                  <Beaker className="w-5 h-5 text-primary text-2xl" />
+                  <div>
+                    <h3 className="text-xl font-bold text-on-surface tracking-tight">Scenario Simulation Sandbox</h3>
+                    <p className="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-outline font-semibold">Simulate segment volume & price variations on active schemas (Palantir Decision Sandbox)</p>
+                  </div>
+                </div>
+                {simulationResult?.verdict && (
+                  <span className={`px-3 py-1 text-xs font-bold rounded-lg ${
+                    simulationResult.verdict.severity === "Optimal" ? "bg-green-400/10 text-green-400 border border-green-400/25" :
+                    simulationResult.verdict.severity === "High" ? "bg-red-400/10 text-red-400 border border-red-400/25" :
+                    "bg-amber-400/10 text-amber-400 border border-amber-400/25"
+                  }`}>
+                    {simulationResult.verdict.severity} Risk Status
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                
+                {/* Sliders Form */}
+                <div className="lg:col-span-4 space-y-8 flex flex-col justify-between py-xs">
+                  
+                  {/* Parent Qty Multiplier */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
+                      <span className="text-outline">Parent Sports Volume</span>
+                      <span className="text-primary font-bold">{parentQtyMult.toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min={0.5} 
+                      max={2.0} 
+                      step={0.1} 
+                      value={parentQtyMult}
+                      onChange={(e) => setParentQtyMult(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary border-none outline-none"
+                    />
+                  </div>
+
+                  {/* Parent Price Multiplier */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
+                      <span className="text-outline">Parent Sports Price</span>
+                      <span className="text-primary font-bold">{parentPriceMult.toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min={0.5} 
+                      max={2.0} 
+                      step={0.1} 
+                      value={parentPriceMult}
+                      onChange={(e) => setParentPriceMult(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary border-none outline-none"
+                    />
+                  </div>
+
+                  {/* Child Qty Multiplier */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
+                      <span className="text-outline">Child Nutrition Volume</span>
+                      <span className="text-secondary font-bold">{childQtyMult.toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min={0.5} 
+                      max={3.0} 
+                      step={0.1} 
+                      value={childQtyMult}
+                      onChange={(e) => setChildQtyMult(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-secondary border-none outline-none"
+                    />
+                  </div>
+
+                  {/* Child Price Multiplier */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
+                      <span className="text-outline">Child Nutrition Price</span>
+                      <span className="text-secondary font-bold">{childPriceMult.toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min={0.5} 
+                      max={2.0} 
+                      step={0.1} 
+                      value={childPriceMult}
+                      onChange={(e) => setChildPriceMult(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-secondary border-none outline-none"
+                    />
+                  </div>
+
+                  {/* Reset Buttons */}
+                  <button 
+                    onClick={() => {
+                      setParentQtyMult(1.0);
+                      setParentPriceMult(1.0);
+                      setChildQtyMult(1.0);
+                      setChildPriceMult(1.0);
+                    }}
+                    className="w-full mt-2 py-2 border border-outline-variant hover:bg-white/5 rounded-xl text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface transition-all active:scale-[0.98]"
+                  >
+                    Reset Sandbox Parameters
+                  </button>
+
+                </div>
+
+                {/* Simulation Summary & Chart */}
+                <div className="lg:col-span-8 flex flex-col justify-between space-y-6 min-h-[300px]">
+                  
+                  {/* Results Indicators */}
+                  {simulationResult && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="bg-surface-container p-4 rounded-xl border border-white/5">
+                        <span className="text-[9px] text-outline uppercase font-bold">Simulated Revenue</span>
+                        <p className="text-md font-extrabold text-on-surface mt-0.5">
+                          ₹{(simulationResult.summary.simulated_revenue / 10000000).toFixed(2)}Cr
+                        </p>
+                      </div>
+                      <div className="bg-surface-container p-4 rounded-xl border border-white/5">
+                        <span className="text-[9px] text-outline uppercase font-bold">Revenue Shift</span>
+                        <p className={`text-md font-extrabold mt-0.5 ${
+                          simulationResult.summary.revenue_diff >= 0 ? "text-green-400" : "text-red-400"
+                        }`}>
+                          {simulationResult.summary.revenue_diff_percent}%
+                        </p>
+                      </div>
+                      <div className="bg-surface-container p-4 rounded-xl border border-white/5">
+                        <span className="text-[9px] text-outline uppercase font-bold">Simulated Net Profit</span>
+                        <p className="text-md font-extrabold text-on-surface mt-0.5">
+                          ₹{(simulationResult.summary.simulated_profit / 10000000).toFixed(2)}Cr
+                        </p>
+                      </div>
+                      <div className="bg-surface-container p-4 rounded-xl border border-white/5">
+                        <span className="text-[9px] text-outline uppercase font-bold">Profit Shift</span>
+                        <p className={`text-md font-extrabold mt-0.5 ${
+                          simulationResult.summary.profit_diff >= 0 ? "text-green-400" : "text-red-400"
+                        }`}>
+                          {simulationResult.summary.profit_diff_percent}%
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comparative Chart */}
+                  <div className="flex-1 flex flex-col justify-end">
+                    {simulationResult && (
+                      <div className="flex items-end gap-3 px-2 h-40">
+                        {simulationResult.charts.baseline.map((baseVal: number, idx: number) => {
+                          const simVal = simulationResult.charts.simulated[idx];
+                          const maxVal = Math.max(...simulationResult.charts.baseline, ...simulationResult.charts.simulated, 1);
+                          
+                          const baseHeight = Math.max(2, Math.round((baseVal / maxVal) * 90));
+                          const simHeight = Math.max(2, Math.round((simVal / maxVal) * 90));
+
+                          return (
+                            <div key={idx} className="flex-1 flex items-end gap-1 group relative h-full">
+                              {/* Baseline bar */}
+                              <div 
+                                style={{ height: `${baseHeight}%` }} 
+                                className="flex-1 bg-primary/25 border-t border-primary/40 rounded-t-sm transition-all"
+                              ></div>
+                              {/* Simulated bar */}
+                              <div 
+                                style={{ height: `${simHeight}%` }} 
+                                className="flex-1 bg-secondary/35 border-t border-secondary/50 rounded-t-sm transition-all shadow-[0_0_8px_rgba(210,187,255,0.1)]"
+                              ></div>
+                              
+                              {/* Tooltip */}
+                              <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-surface-container border border-white/10 p-2 rounded text-[8px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 space-y-0.5 pointer-events-none shadow-xl">
+                                <p className="text-primary">Base: ₹{(baseVal / 100000).toFixed(1)}L</p>
+                                <p className="text-secondary">Sim: ₹{(simVal / 100000).toFixed(1)}L</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    
+                    {/* Chart Labels */}
+                    <div className="flex justify-between pt-sm border-t border-white/5 text-[9px] font-bold text-outline uppercase tracking-wider mt-1 select-none">
+                      {simulationResult?.charts.labels.map((lbl: string, idx: number) => (
+                        <span key={idx} className="flex-1 text-center">{lbl}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Verdict Recommendation alert */}
+                  {simulationResult?.verdict && (
+                    <div className={`p-6 rounded-xl border flex items-center gap-4 leading-snug font-semibold text-[11px] ${
+                      simulationResult.verdict.severity === "Optimal" ? "bg-green-400/5 border-green-400/20 text-green-400" :
+                      simulationResult.verdict.severity === "High" ? "bg-red-400/5 border-red-400/20 text-red-400" :
+                      "bg-amber-400/5 border-amber-400/20 text-amber-400"
+                    }`}>
+                      <span className="material-symbols-outlined text-[16px]">
+                        {simulationResult.verdict.severity === "Optimal" ? "verified" : "info"}
+                      </span>
+                      <p>{simulationResult.verdict.message}</p>
+                    </div>
+                  )}
+
+                </div>
 
               </div>
 
@@ -310,8 +614,8 @@ export default function AnalyticsPage() {
             <div className="glass-panel rounded-2xl overflow-hidden flex flex-col md:flex-row h-auto md:h-80 items-stretch">
               
               {/* Baseline standard */}
-              <div className="min-w-0 flex-1 p-md md:p-lg flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
-                <div className="flex min-w-0 justify-between items-start gap-md">
+              <div className="min-w-0 flex-1 p-6 md:p-8 md:p-10 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
+                <div className="flex min-w-0 justify-between items-start gap-6">
                   <div>
                     <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[9px] font-bold rounded uppercase tracking-wider mb-1.5 inline-block">
                       Baseline Core
@@ -325,20 +629,20 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
 
-                <div className="bg-surface-container rounded-xl p-md space-y-sm border border-white/5 mt-md">
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                <div className="bg-surface-container rounded-xl p-6 space-y-4 border border-white/5 mt-6">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">CPU</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-outline w-[45%]"></div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">RAM</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-outline w-[78%]"></div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">IOPS</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-outline" style={{ width: `${Math.max(10, 100 - Math.min(90, Math.round(baselineModel.latency / 10)))}%` }}></div>
@@ -349,12 +653,12 @@ export default function AnalyticsPage() {
 
               {/* Icon compare separator */}
               <div className="w-12 bg-surface-container-lowest/30 flex items-center justify-center border-r border-white/5 select-none hidden md:flex">
-                <span className="material-symbols-outlined text-outline text-2xl">compare_arrows</span>
+                <ArrowLeftRight className="w-5 h-5 text-outline text-2xl" />
               </div>
 
               {/* Fine-tuned Enhanced model */}
-              <div className="min-w-0 flex-1 p-md md:p-lg flex flex-col justify-between bg-secondary-container/5">
-                <div className="flex min-w-0 justify-between items-start gap-md">
+              <div className="min-w-0 flex-1 p-6 md:p-8 md:p-10 flex flex-col justify-between bg-secondary-container/5">
+                <div className="flex min-w-0 justify-between items-start gap-6">
                   <div>
                     <span className="px-2 py-0.5 bg-secondary/10 border border-secondary/20 text-secondary text-[9px] font-bold rounded uppercase tracking-wider mb-1.5 inline-block">
                       Specialized Tuning
@@ -368,20 +672,20 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
 
-                <div className="bg-surface-container rounded-xl p-md space-y-sm border border-white/5 mt-md">
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                <div className="bg-surface-container rounded-xl p-6 space-y-4 border border-white/5 mt-6">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">CPU</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-secondary w-[65%]"></div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">RAM</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-secondary w-[62%]"></div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-md text-label-sm font-semibold">
+                  <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                     <span className="text-outline w-10 text-right">IOPS</span>
                     <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
                       <div className="h-full bg-secondary shadow-[0_0_8px_rgba(210,187,255,0.4)]" style={{ width: `${Math.max(10, 100 - Math.min(90, Math.round(tunedModel.latency / 10)))}%` }}></div>
@@ -393,30 +697,30 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Execution logs list */}
-            <div className="glass-panel rounded-2xl p-md md:p-lg space-y-md">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md pb-md border-b border-white/5">
+            <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-md border-b border-white/5">
                 <div>
                   <h4 className="text-lg font-bold text-on-surface tracking-tight leading-none">Historical Execution logs</h4>
                   <p className="text-[10px] text-outline mt-1 font-semibold">Search model runtimes, query latency, and compute costs</p>
                 </div>
                 
                 {/* Search query input & filters */}
-                <div className="flex flex-wrap items-center gap-sm select-none w-full sm:w-auto z-25 relative">
+                <div className="flex flex-wrap items-center gap-4 select-none w-full sm:w-auto z-25 relative">
                   <div className="relative flex-1 sm:flex-none">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[16px]">search</span>
+                    <Search className="w-5 h-5 absolute left-2.5 top-1/2 -translate-y-1/2  text-outline text-[16px]" />
                     <input 
                       type="text" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Model ID..."
-                      className="bg-surface-container border-b-2 border-outline-variant focus:border-primary pl-8 pr-3 py-1.5 text-label-sm text-on-surface outline-none rounded-t"
+                      className="bg-surface-container border-b-2 border-outline-variant focus:border-primary pl-8 pr-3 py-1.5 text-[10px] md:text-xs font-semibold tracking-wider uppercase text-on-surface outline-none rounded-t"
                     />
                   </div>
 
                   <select 
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-surface-container border border-white/5 text-label-sm font-bold text-on-surface rounded px-sm py-1.5 focus:outline-none focus:ring-0 cursor-pointer pr-8"
+                    className="bg-surface-container border border-white/5 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface rounded px-sm py-1.5 focus:outline-none focus:ring-0 cursor-pointer pr-8"
                   >
                     <option value="All">All Statuses</option>
                     <option value="Success">Success Only</option>
@@ -428,14 +732,14 @@ export default function AnalyticsPage() {
               {/* Logs Table */}
               <div className="overflow-x-auto min-h-[200px]">
                 {loadingLogs ? (
-                  <div className="flex flex-col items-center justify-center py-xl text-outline font-bold">
-                    <span className="material-symbols-outlined animate-spin text-headline-xl text-primary">sync</span>
-                    <span className="mt-sm text-label-sm">Querying Database Logs...</span>
+                  <div className="flex flex-col items-center justify-center py-16 md:py-24 text-outline font-bold">
+                    <RefreshCw className="w-5 h-5 animate-spin text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight md:leading-none text-primary" />
+                    <span className="mt-4 text-[10px] md:text-xs font-semibold tracking-wider uppercase">Querying Database Logs...</span>
                   </div>
                 ) : logs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-xl text-outline font-bold">
-                    <span className="material-symbols-outlined text-headline-xl">database_off</span>
-                    <span className="mt-sm text-label-sm">No telemetry records match query parameters.</span>
+                  <div className="flex flex-col items-center justify-center py-16 md:py-24 text-outline font-bold">
+                    <Database className="w-5 h-5 text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight md:leading-none" />
+                    <span className="mt-4 text-[10px] md:text-xs font-semibold tracking-wider uppercase">No telemetry records match query parameters.</span>
                   </div>
                 ) : (
                   <table className="w-full text-left border-collapse">
@@ -448,13 +752,13 @@ export default function AnalyticsPage() {
                         <th className="pb-3 text-right">COMPUTE COST</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-label-sm font-semibold">
+                    <tbody className="divide-y divide-white/5 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-semibold">
                       {logs.map((log) => (
                         <tr key={log.id} className="hover:bg-white/2 transition-colors">
                           <td className="py-3.5 font-mono text-outline">{log.timestamp}</td>
                           <td className="py-3.5 text-on-surface font-bold">{log.model_id}</td>
                           <td className="py-3.5">
-                            <span className={`inline-flex items-center gap-xs ${
+                            <span className={`inline-flex items-center gap-2 ${
                               log.status === "Success" ? "text-green-400" : "text-red-400"
                             }`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${
@@ -475,13 +779,13 @@ export default function AnalyticsPage() {
           </>
         ) : (
           /* CODE VIEW - IDE syntax breakdown of database entities */
-          <div className="glass-panel rounded-2xl p-md md:p-lg font-mono text-label-sm overflow-hidden flex flex-col bg-surface-container-lowest/80 border-primary/20">
+          <div className="glass-panel rounded-2xl p-6 md:p-8 md:p-10 font-mono text-[10px] md:text-xs font-semibold tracking-wider uppercase overflow-hidden flex flex-col bg-surface-container-lowest/80 border-primary/20">
             <div className="flex justify-between items-center pb-sm border-b border-white/5 text-outline select-none">
               <span>query_synthesis_payload.json</span>
               <span className="text-[10px] text-primary uppercase font-bold">SQL Logs Raw Data</span>
             </div>
             
-            <pre className="p-md text-emerald-400 overflow-x-auto whitespace-pre-wrap select-text leading-relaxed select-all">
+            <pre className="p-6 text-emerald-400 overflow-x-auto whitespace-pre-wrap select-text leading-relaxed select-all">
               {JSON.stringify({
                 status: "optimal",
                 cluster: "Frankfurt-Node-EU1",
@@ -518,11 +822,11 @@ export default function AnalyticsPage() {
               }}
               className="absolute top-4 right-4 text-outline hover:text-on-surface transition-colors p-1"
             >
-              <span className="material-symbols-outlined text-body-lg">close</span>
+              <X className="w-5 h-5 text-base md:text-lg text-zinc-400 font-normal" />
             </button>
 
-            <div className="text-center mb-md border-b border-white/5 pb-md relative z-10">
-              <span className="text-primary font-extrabold tracking-tighter text-2xl flex items-center justify-center gap-xs">
+            <div className="text-center mb-6 border-b border-white/5 pb-md relative z-10">
+              <span className="text-primary font-extrabold tracking-tighter text-2xl flex items-center justify-center gap-2">
                 <span className={`material-symbols-outlined text-2xl ${!diagnosisResult ? 'animate-spin' : ''}`}>
                   {!diagnosisResult ? 'sync' : 'verified'}
                 </span>
@@ -532,16 +836,16 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Steps execution console log */}
-            <div className="bg-surface-container-lowest border border-white/5 p-md rounded-xl font-mono text-[11px] text-on-surface-variant space-y-sm max-h-48 overflow-y-auto mb-md relative z-10 select-text">
+            <div className="bg-surface-container-lowest border border-white/5 p-6 rounded-xl font-mono text-[11px] text-on-surface-variant space-y-4 max-h-48 overflow-y-auto mb-6 relative z-10 select-text">
               {scanSteps.map((step, idx) => (
-                <div key={idx} className="flex gap-sm items-start leading-relaxed">
+                <div key={idx} className="flex gap-4 items-start leading-relaxed">
                   <span className="text-primary font-bold">[{idx + 1}]</span>
                   <p>{step}</p>
                 </div>
               ))}
               
               {!diagnosisResult && (
-                <div className="flex gap-sm items-center text-primary font-bold animate-pulse">
+                <div className="flex gap-4 items-center text-primary font-bold animate-pulse">
                   <span>&gt;</span>
                   <span>Compiling network matrices...</span>
                 </div>
@@ -550,45 +854,45 @@ export default function AnalyticsPage() {
 
             {/* Simulated report results */}
             {diagnosisResult ? (
-              <div className="space-y-md animate-fade-in relative z-10">
-                <div className="grid grid-cols-2 gap-sm">
-                  <div className="p-sm bg-surface-container rounded-xl border border-white/5">
+              <div className="space-y-6 animate-fade-in relative z-10">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-surface-container rounded-xl border border-white/5">
                     <span className="text-[9px] text-outline uppercase font-bold">ANOMALY SEVERITY</span>
-                    <p className="text-label-md font-extrabold text-error flex items-center gap-xs mt-0.5">
+                    <p className="text-xs md:text-sm font-medium font-extrabold text-error flex items-center gap-2 mt-0.5">
                       <span className="w-2.5 h-2.5 bg-error rounded-full animate-ping"></span>
                       {diagnosisResult.severity} Risk
                     </p>
                   </div>
                   
-                  <div className="p-sm bg-surface-container rounded-xl border border-white/5">
+                  <div className="p-4 bg-surface-container rounded-xl border border-white/5">
                     <span className="text-[9px] text-outline uppercase font-bold">SCAN CONFIDENCE</span>
-                    <p className="text-label-md font-extrabold text-secondary flex items-center gap-xs mt-0.5">
-                      <span className="material-symbols-outlined text-label-md" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <p className="text-xs md:text-sm font-medium font-extrabold text-secondary flex items-center gap-2 mt-0.5">
+                      <span className="material-symbols-outlined text-xs md:text-sm font-medium" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                       {diagnosisResult.confidence} Accuracy
                     </p>
                   </div>
                 </div>
 
-                <div className="p-md bg-surface-container rounded-xl border border-white/5 space-y-xs">
+                <div className="p-6 bg-surface-container rounded-xl border border-white/5 space-y-2">
                   <span className="text-[9px] text-outline uppercase font-bold">Anomaly Deviation</span>
-                  <p className="text-label-md font-bold text-on-surface">{diagnosisResult.deviation}</p>
+                  <p className="text-xs md:text-sm font-medium font-bold text-on-surface">{diagnosisResult.deviation}</p>
                 </div>
 
-                <div className="p-md bg-primary-container/10 border border-primary/25 rounded-xl space-y-xs">
+                <div className="p-6 bg-primary-container/10 border border-primary/25 rounded-xl space-y-2">
                   <span className="text-[9px] text-primary uppercase font-bold">AI Action Recommendation</span>
                   <p className="text-[11px] text-primary-fixed leading-relaxed font-semibold">
                     {diagnosisResult.recommendation}
                   </p>
                 </div>
 
-                <div className="flex gap-sm pt-md border-t border-white/5">
+                <div className="flex gap-4 pt-md border-t border-white/5">
                   <button 
                     onClick={() => {
                       setIsDiagnosing(false);
                       setScanSteps([]);
                       setDiagnosisResult(null);
                     }}
-                    className="flex-1 py-2 border border-outline-variant hover:bg-white/5 rounded-lg text-label-sm font-bold text-on-surface transition-all"
+                    className="flex-1 py-2 border border-outline-variant hover:bg-white/5 rounded-lg text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold text-on-surface transition-all"
                   >
                     Close Synthesis
                   </button>
@@ -599,16 +903,16 @@ export default function AnalyticsPage() {
                       setDiagnosisResult(null);
                       router.push("/console/copilot");
                     }}
-                    className="flex-1 py-2 bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-extrabold rounded-lg text-label-sm shadow-md hover:brightness-110 transition-all cursor-pointer"
+                    className="flex-1 py-2 bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-extrabold rounded-lg text-[10px] md:text-xs font-semibold tracking-wider uppercase shadow-md hover:brightness-110 transition-all cursor-pointer"
                   >
                     Deploy Solution
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-md text-outline font-bold animate-pulse">
-                <span className="material-symbols-outlined text-headline-xl text-primary animate-spin">cyclone</span>
-                <span className="mt-sm text-label-sm font-bold uppercase tracking-wider text-primary">Running Holographic Scan...</span>
+              <div className="flex flex-col items-center justify-center py-6 text-outline font-bold animate-pulse">
+                <Loader2 className="w-5 h-5 text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight md:leading-none text-primary animate-spin" />
+                <span className="mt-4 text-[10px] md:text-xs font-semibold tracking-wider uppercase font-bold uppercase tracking-wider text-primary">Running Holographic Scan...</span>
               </div>
             )}
 
