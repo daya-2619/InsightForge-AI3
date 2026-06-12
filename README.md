@@ -1,4 +1,4 @@
-# InsightForge AI (Sturvixa AI)
+# Sturvixa AI
 
 An enterprise-grade, real-time SaaS platform built with a high-performance modern tech stack. InsightForge AI empowers organizations with lightning-fast data ingestion, highly-scalable backend services, and a stunning, responsive Glassmorphism UI.
 
